@@ -1,0 +1,44 @@
+#!/bin/sh
+# Emergency GPG fix - runs in normal hooks (after debootstrap)
+# This ensures GPG is available before any package operations
+
+set -e
+
+echo "I: Emergency GPG installation hook"
+
+# Set GPG environment variables for non-interactive operation
+export GPG_TTY=/dev/console
+export GNUPGHOME=/root/.gnupg
+export GPG_AGENT_INFO=
+export DEBIAN_FRONTEND=noninteractive
+
+# Ensure GPG directory exists with correct permissions
+mkdir -p /root/.gnupg
+chmod 700 /root/.gnupg
+
+# Check if gpg exists
+if ! command -v gpg >/dev/null 2>&1; then
+    echo "I: GPG not found, installing..."
+    
+    # Try to install without GPG verification first
+    export APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1
+    
+    # Update and install gnupg
+    apt-get update -o Acquire::AllowInsecureRepositories=true -o Acquire::Check-Valid-Until=false || true
+    apt-get install -y --allow-unauthenticated gnupg gnupg2 || apt-get install -y gnupg || true
+    
+    # Verify
+    if command -v gpg >/dev/null 2>&1; then
+        echo "I: GPG installed successfully"
+        gpg --version | head -n 1
+    else
+        echo "W: Could not install GPG, continuing anyway"
+    fi
+else
+    echo "I: GPG already available"
+    gpg --version | head -n 1
+fi
+
+exit 0
+
+# Made with Bob

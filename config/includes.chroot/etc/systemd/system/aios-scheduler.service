@@ -1,0 +1,40 @@
+[Unit]
+Description=Koii AIOS Task Scheduler Service
+Documentation=https://koii.network
+After=network-online.target aios-agent.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=aios
+Group=aios
+WorkingDirectory=/opt/aios
+Environment="PATH=/opt/aios/.venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONUNBUFFERED=1"
+Environment="AIOS_DATA_DIR=/var/lib/aios/data"
+Environment="AIOS_LOG_DIR=/var/lib/aios/logs"
+Environment="AIOS_WORKSPACE=/var/lib/aios/workspace"
+
+# Start the task scheduler
+ExecStart=/opt/aios/.venv/bin/python3 -m src.koii_os.core.scheduler
+
+# Restart policy
+Restart=on-failure
+RestartSec=10s
+StartLimitInterval=300
+StartLimitBurst=5
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/aios /opt/aios
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=aios-scheduler
+
+[Install]
+WantedBy=multi-user.target

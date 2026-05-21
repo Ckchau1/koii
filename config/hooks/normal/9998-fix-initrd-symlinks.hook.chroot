@@ -1,0 +1,60 @@
+#!/bin/bash
+set -e
+
+# Fix dangling symlinks in /boot before lb_chroot_hacks runs
+# This prevents chmod errors on dangling symlinks
+
+echo "P: Fixing initrd and vmlinuz symlinks..."
+
+cd /boot
+
+# Remove dangling symlinks if they exist
+for link in initrd.img initrd.img.old vmlinuz vmlinuz.old; do
+    if [ -L "$link" ] && [ ! -e "$link" ]; then
+        echo "P: Removing dangling symlink: $link"
+        rm -f "$link"
+    fi
+done
+
+# Recreate symlinks to actual kernel files if they exist
+if [ -n "$(ls -1 vmlinuz-* 2>/dev/null | head -1)" ]; then
+    LATEST_KERNEL=$(ls -1 vmlinuz-* | sort -V | tail -1)
+    KERNEL_VERSION=${LATEST_KERNEL#vmlinuz-}
+    
+    echo "P: Creating symlinks for kernel version: $KERNEL_VERSION"
+    
+    # Create vmlinuz symlink
+    if [ -f "vmlinuz-${KERNEL_VERSION}" ]; then
+        ln -sf "vmlinuz-${KERNEL_VERSION}" vmlinuz
+        echo "P: Created symlink: vmlinuz -> vmlinuz-${KERNEL_VERSION}"
+    fi
+    
+    # Create initrd.img symlink
+    if [ -f "initrd.img-${KERNEL_VERSION}" ]; then
+        ln -sf "initrd.img-${KERNEL_VERSION}" initrd.img
+        echo "P: Created symlink: initrd.img -> initrd.img-${KERNEL_VERSION}"
+    fi
+    
+    # Handle .old symlinks if there's a previous kernel
+    PREV_KERNEL=$(ls -1 vmlinuz-* | sort -V | tail -2 | head -1)
+    if [ -n "$PREV_KERNEL" ] && [ "$PREV_KERNEL" != "$LATEST_KERNEL" ]; then
+        PREV_VERSION=${PREV_KERNEL#vmlinuz-}
+        
+        if [ -f "vmlinuz-${PREV_VERSION}" ]; then
+            ln -sf "vmlinuz-${PREV_VERSION}" vmlinuz.old
+            echo "P: Created symlink: vmlinuz.old -> vmlinuz-${PREV_VERSION}"
+        fi
+        
+        if [ -f "initrd.img-${PREV_VERSION}" ]; then
+            ln -sf "initrd.img-${PREV_VERSION}" initrd.img.old
+            echo "P: Created symlink: initrd.img.old -> initrd.img-${PREV_VERSION}"
+        fi
+    fi
+fi
+
+echo "P: Symlink fix complete"
+ls -la /boot/ | grep -E 'initrd|vmlinuz' || true
+
+exit 0
+
+# Made with Bob

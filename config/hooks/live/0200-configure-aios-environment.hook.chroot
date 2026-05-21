@@ -1,0 +1,141 @@
+#!/bin/bash
+# Configure AIOS environment and settings
+# This runs in the chroot environment during ISO build
+
+set -e
+
+echo "=== Configuring AIOS Environment ==="
+
+# Create AIOS data directories
+mkdir -p /var/lib/aios/{data,logs,cache,workspace}
+chmod 755 /var/lib/aios
+
+# Install Node.js if not present (required for Electron browser)
+if ! command -v node &> /dev/null; then
+    echo "Installing Node.js..."
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+    apt-get install -y nodejs
+fi
+
+# Install Python dependencies in virtual environment
+if [ -d /opt/aios ] && [ -f /opt/aios/requirements.txt ]; then
+    echo "Setting up Python virtual environment..."
+    cd /opt/aios
+    python3 -m venv .venv
+    .venv/bin/pip install --upgrade pip setuptools wheel
+    .venv/bin/pip install -r requirements.txt || echo "Warning: Some Python packages failed to install"
+fi
+
+# Install Electron browser dependencies
+if [ -d /opt/aios/electron ] && [ -f /opt/aios/electron/package.json ]; then
+    echo "Installing Electron browser dependencies..."
+    cd /opt/aios/electron
+    npm install --production || echo "Warning: Some npm packages failed to install"
+fi
+
+# Configure Docker for AIOS
+if command -v docker &> /dev/null; then
+    echo "Configuring Docker..."
+    systemctl enable docker || true
+    
+    # Add default user to docker group (will be created during installation)
+    # This is handled in postinst for actual users
+fi
+
+# Create default AIOS configuration
+cat > /opt/aios/aios-config.yaml << 'EOF'
+# Koii AIOS Configuration
+version: "1.0"
+
+# Agent settings
+agent:
+  enabled: true
+  auto_start: false
+  data_dir: /var/lib/aios/data
+  log_level: info
+
+# Browser settings
+browser:
+  enabled: true
+  auto_start: false
+  headless: false
+  user_agent: "Koii-AIOS-Browser/1.0"
+
+# Scheduler settings
+scheduler:
+  enabled: true
+  auto_start: false
+  max_concurrent_tasks: 5
+  task_timeout: 3600
+
+# Security settings
+security:
+  sandbox_enabled: true
+  network_isolation: false
+  
+# Workspace settings
+workspace:
+  root: /var/lib/aios/workspace
+  max_size_gb: 50
+EOF
+
+chmod 644 /opt/aios/aios-config.yaml
+
+# Create welcome message for first boot
+cat > /etc/profile.d/aios-welcome.sh << 'EOF'
+# AIOS Welcome Message
+if [ -f /opt/aios/.first-boot ]; then
+    cat << 'WELCOME'
+
+╔═══════════════════════════════════════════════════════════╗
+║                                                           ║
+║          Welcome to Koii AIOS - AI Operating System      ║
+║                                                           ║
+║  Get started with these commands:                        ║
+║    koii --help          - Show all available commands    ║
+║    koii agent start     - Start the Koii agent           ║
+║    koii dashboard       - Open control dashboard         ║
+║                                                           ║
+║  Services:                                               ║
+║    sudo systemctl start aios-agent                       ║
+║    sudo systemctl start aios-browser                     ║
+║    sudo systemctl start aios-scheduler                   ║
+║                                                           ║
+║  Documentation: https://koii.network/docs                ║
+║                                                           ║
+╚═══════════════════════════════════════════════════════════╝
+
+WELCOME
+    rm -f /opt/aios/.first-boot
+fi
+EOF
+
+chmod 644 /etc/profile.d/aios-welcome.sh
+touch /opt/aios/.first-boot
+
+# Update desktop database
+if command -v update-desktop-database &> /dev/null; then
+    update-desktop-database /usr/share/applications || true
+fi
+
+# Configure GNOME settings for AIOS (if GNOME is installed)
+if command -v gsettings &> /dev/null; then
+    # These will be applied per-user on first login
+    mkdir -p /etc/dconf/db/local.d
+    cat > /etc/dconf/db/local.d/01-aios-defaults << 'EOF'
+[org/gnome/desktop/background]
+picture-uri='file:///opt/aios/static/wallpaper.jpg'
+
+[org/gnome/desktop/interface]
+enable-hot-corners=false
+show-battery-percentage=true
+
+[org/gnome/shell]
+favorite-apps=['aios-browser.desktop', 'aios-control.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Terminal.desktop']
+EOF
+    dconf update || true
+fi
+
+echo "=== AIOS Environment Configuration Complete ==="
+
+# Made with Bob

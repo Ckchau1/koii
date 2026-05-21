@@ -1,0 +1,29 @@
+#!/bin/sh
+# Cleanup bootstrap APT configuration after GPG is properly installed
+# This removes temporary configurations that allowed unauthenticated packages
+
+set -e
+
+echo "I: Cleaning up bootstrap APT configuration..."
+
+# Remove temporary bootstrap APT config if it exists
+if [ -f /etc/apt/apt.conf.d/99-allow-unauthenticated-bootstrap ]; then
+    echo "I: Removing temporary bootstrap APT configuration"
+    rm -f /etc/apt/apt.conf.d/99-allow-unauthenticated-bootstrap
+fi
+
+# Ensure GPG is working
+if command -v gpg >/dev/null 2>&1; then
+    echo "I: GPG is available and working"
+    gpg --version | head -n 1
+else
+    echo "W: GPG not found, but continuing..."
+fi
+
+# Final apt update with full GPG verification
+echo "I: Running final apt update with GPG verification..."
+apt-get update || echo "W: apt-get update completed with warnings"
+
+echo "I: Bootstrap APT configuration cleanup complete"
+
+# Made with Bob

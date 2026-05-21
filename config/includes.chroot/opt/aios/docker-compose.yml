@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  koii-os:
+    build:
+      context: .
+      dockerfile: Dockerfile.ubuntu
+    container_name: koii-os
+    environment:
+      KOII_LLM_PROFILE: ${KOII_LLM_PROFILE:-offline}
+      KOII_LLM_CAPABILITY: ${KOII_LLM_CAPABILITY:-}
+      KOII_LLM_MODEL: ${KOII_LLM_MODEL:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      KOII_NATS_URL: ${KOII_NATS_URL:-nats://nats:4222}
+    volumes:
+      - ./agent-config.yaml:/app/agent-config.yaml:ro
+      - ./data:/app/data
+    depends_on:
+      - nats
+    restart: unless-stopped
+
+  nats:
+    image: nats:2.10-alpine
+    container_name: koii-nats
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    command: ["-js", "-m", "8222"]
+    restart: unless-stopped

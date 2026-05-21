@@ -1,0 +1,66 @@
+#!/bin/bash
+# Live-build hook to install AIOS package during ISO build
+# This runs in the chroot environment
+
+set -e
+
+echo "=== AIOS Installation Hook ==="
+
+# Build the AIOS Debian package if source exists
+if [ -d /opt/aios-package-build ]; then
+    echo "Building AIOS Debian package..."
+    cd /opt/aios-package-build
+    
+    # Create package structure
+    mkdir -p aios-core_1.0.0_all/opt/aios
+    mkdir -p aios-core_1.0.0_all/DEBIAN
+    
+    # Copy AIOS files to package
+    rsync -a --exclude='*.pyc' --exclude='__pycache__' \
+        --exclude='.git' --exclude='.venv' --exclude='build' \
+        /opt/aios/ aios-core_1.0.0_all/opt/aios/
+    
+    # Copy control files
+    cp /tmp/aios-debian-control/* aios-core_1.0.0_all/DEBIAN/
+    chmod 755 aios-core_1.0.0_all/DEBIAN/postinst
+    chmod 755 aios-core_1.0.0_all/DEBIAN/prerm
+    
+    # Build the package
+    dpkg-deb --build aios-core_1.0.0_all
+    
+    # Install the package
+    dpkg -i aios-core_1.0.0_all.deb || apt-get install -f -y
+    
+    echo "AIOS package installed successfully"
+else
+    echo "Warning: AIOS package source not found, skipping package build"
+fi
+
+# Ensure proper permissions
+if [ -d /opt/aios ]; then
+    chown -R root:root /opt/aios
+    chmod -R 755 /opt/aios
+    
+    # Make scripts executable
+    find /opt/aios/scripts -type f -name "*.sh" -exec chmod +x {} \;
+    find /opt/aios/scripts -type f -name "*.py" -exec chmod +x {} \;
+    
+    if [ -f /opt/aios/scripts/koii ]; then
+        chmod +x /opt/aios/scripts/koii
+    fi
+    
+    if [ -f /opt/aios/electron/start-browser.sh ]; then
+        chmod +x /opt/aios/electron/start-browser.sh
+    fi
+fi
+
+# Enable systemd services (they will be started by user)
+if [ -f /etc/systemd/system/aios-agent.service ]; then
+    systemctl enable aios-agent.service || true
+    systemctl enable aios-browser.service || true
+    systemctl enable aios-scheduler.service || true
+fi
+
+echo "=== AIOS Installation Hook Complete ==="
+
+# Made with Bob

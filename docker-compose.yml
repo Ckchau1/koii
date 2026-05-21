@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  # Main AIOS application with Web UI
+  aios:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: koii-aios
+    ports:
+      - "8000:8000"    # Web UI / API
+      - "43210:43210"  # Min Browser API
+    volumes:
+      # Persist data
+      - ./data:/app/data
+      - ./config:/app/config
+      - ./logs:/app/logs
+      # Mount agent config
+      - ./agent-config.yaml:/app/agent-config.yaml:ro
+      # Optional: mount .env for API keys
+      - ./.env:/app/.env:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - KOII_ENV=docker
+      - KOII_DATA_DIR=/app/data
+      - KOII_CONFIG_DIR=/app/config
+      - KOII_LOG_DIR=/app/logs
+    restart: unless-stopped
+    networks:
+      - koii-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # NATS messaging server (optional, for distributed agents)
+  nats:
+    image: nats:2.10-alpine
+    container_name: koii-nats
+    ports:
+      - "4222:4222"  # Client connections
+      - "8222:8222"  # HTTP monitoring
+      - "6222:6222"  # Cluster routing
+    command:
+      - "--http_port"
+      - "8222"
+      - "--js"       # Enable JetStream
+    volumes:
+      - nats-data:/data
+    restart: unless-stopped
+    networks:
+      - koii-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Optional: PostgreSQL for advanced persistence
+  # Uncomment if you want to use PostgreSQL instead of SQLite
+  # postgres:
+  #   image: postgres:16-alpine
+  #   container_name: koii-postgres
+  #   environment:
+  #     - POSTGRES_DB=koii_os
+  #     - POSTGRES_USER=koii
+  #     - POSTGRES_PASSWORD=koii_secure_password
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+  #   restart: unless-stopped
+  #   networks:
+  #     - koii-network
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U koii"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+  # Optional: Redis for caching and pub/sub
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: koii-redis
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis-data:/data
+  #   restart: unless-stopped
+  #   networks:
+  #     - koii-network
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 3
+
+networks:
+  koii-network:
+    driver: bridge
+
+volumes:
+  nats-data:
+    driver: local
+  # postgres-data:
+  #   driver: local
+  # redis-data:
+  #   driver: local
+
+# Made with Bob

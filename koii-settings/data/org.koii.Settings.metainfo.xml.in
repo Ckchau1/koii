@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.koii.Settings</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Koii Settings</name>
+  <summary>Configure Koii OS AI agents and system settings</summary>
+  
+  <description>
+    <p>
+      Koii Settings is the central configuration hub for Koii OS, an AI-powered operating system.
+      It provides comprehensive control over semantic-driven agents, AI browser features, task management,
+      and system security.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>Monitor and manage AI agents with real-time status updates</li>
+      <li>Configure semantic-driven browsing with privacy controls</li>
+      <li>Create and monitor AI-powered tasks with automatic planning</li>
+      <li>Adjust agent initiative levels and resource allocation</li>
+      <li>Review security logs and audit trails</li>
+      <li>Manage LLM providers and model configurations</li>
+    </ul>
+  </description>
+  
+  <launchable type="desktop-id">org.koii.Settings.desktop</launchable>
+  
+  <screenshots>
+    <screenshot type="default">
+      <caption>Agent Overview</caption>
+    </screenshot>
+  </screenshots>
+  
+  <url type="homepage">https://koiiai.com</url>
+  <url type="bugtracker">https://github.com/koii-network/koii-os/issues</url>
+  
+  <developer_name>Koii Network</developer_name>
+  <update_contact>dev@koii.network</update_contact>
+  
+  <releases>
+    <release version="1.0.0" date="2026-05-20">
+      <description>
+        <p>Initial release of Koii Settings</p>
+      </description>
+    </release>
+  </releases>
+  
+  <content_rating type="oars-1.1" />
+  
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+  
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+    <control>touch</control>
+  </recommends>
+</component>
+
+<!-- Made with Bob -->

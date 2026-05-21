@@ -1,0 +1,14 @@
+[Desktop Entry]
+Name=Koii Settings
+Comment=Configure Koii OS AI agents, browser, and system settings
+# Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+Keywords=Settings;Preferences;AI;Agent;Browser;Koii;LLM;Semantic;
+Exec=koii-settings
+# Translators: Do NOT translate or transliterate this text (this is an icon file name)!
+Icon=org.koii.Settings
+Terminal=false
+Type=Application
+Categories=GNOME;GTK;Settings;System;X-GNOME-Settings-Panel;
+StartupNotify=true
+X-GNOME-Settings-Panel=koii-settings
+X-Ubuntu-Gettext-Domain=koii-settings

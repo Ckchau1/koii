@@ -1,0 +1,9 @@
+data/org.koii.Settings.desktop.in
+data/org.koii.Settings.metainfo.xml.in
+src/main.py
+src/window.py
+src/pages/agents_page.py
+src/pages/browser_page.py
+src/pages/tasks_page.py
+src/pages/system_page.py
+src/pages/security_page.py

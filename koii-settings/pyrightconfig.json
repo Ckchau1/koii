@@ -1,0 +1,15 @@
+{
+  "include": [
+    "src"
+  ],
+  "extraPaths": [
+    "../src",
+    "/opt/aios/src"
+  ],
+  "reportMissingImports": "none",
+  "reportMissingModuleSource": "none",
+  "reportMissingTypeStubs": false,
+  "pythonVersion": "3.10",
+  "typeCheckingMode": "basic",
+  "stubPath": ""
+}

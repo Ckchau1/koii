@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Koii AIOS Control Center
+GenericName=AIOS Management
+Comment=Manage Koii AIOS agents, tasks, and settings
+Icon=/opt/aios/static/aios-icon.png
+Exec=x-terminal-emulator -e /usr/local/bin/koii dashboard
+Terminal=false
+Categories=System;Settings;
+Keywords=aios;koii;agent;control;settings;
+StartupNotify=true

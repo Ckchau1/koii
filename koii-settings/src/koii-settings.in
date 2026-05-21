@@ -1,0 +1,48 @@
+#!@PYTHON@
+
+# koii-settings - Koii OS Settings Application
+# Copyright (C) 2026 Koii Network
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+import os
+import sys
+import signal
+import locale
+import gettext
+
+# Setup paths
+VERSION = '@VERSION@'
+PKGDATADIR = '@PKGDATADIR@'
+LOCALEDIR = '@LOCALEDIR@'
+
+# Add source directory to path for development
+srcdir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if os.path.exists(os.path.join(srcdir, 'koii_settings')):
+    sys.path.insert(0, srcdir)
+
+# Add installed Koii OS runtime when present in the ISO or installed system
+koii_runtime = '/opt/aios/src'
+if os.path.exists(koii_runtime):
+    sys.path.insert(0, koii_runtime)
+
+# Setup locale and gettext
+locale.bindtextdomain('koii-settings', LOCALEDIR)
+locale.textdomain('koii-settings')
+gettext.bindtextdomain('koii-settings', LOCALEDIR)
+gettext.textdomain('koii-settings')
+
+# Handle SIGINT (Ctrl+C) gracefully
+signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+if __name__ == '__main__':
+    import gi
+    
+    gi.require_version('Gtk', '4.0')
+    gi.require_version('Adw', '1')
+    
+    from koii_settings.main import main
+    sys.exit(main(VERSION))

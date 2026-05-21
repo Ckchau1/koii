@@ -1,0 +1,4 @@
+agents:
+- name: research-assistant
+  type: task
+  goal: Summarize latest AI multi-agent trends

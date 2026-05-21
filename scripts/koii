@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ -d "/opt/aios/src" ]]; then
+  cd /opt/aios
+else
+  cd "$(dirname "${BASH_SOURCE[0]}")/.."
+fi
+
+exec python3 -m src.koii_cli "$@"

@@ -1,0 +1,13 @@
+// Temporary APT configuration for bootstrap stage
+// This allows package installation during initial setup when GPG may not be fully configured
+// Will be overridden by normal apt configuration after GPG is properly installed
+
+// Allow unauthenticated packages during bootstrap (will be removed after GPG setup)
+APT::Get::AllowUnauthenticated "false";
+
+// Reduce warnings during bootstrap
+APT::Key::DontWarnOnDangerousUsage "true";
+
+// Ensure GPG verification is enabled after bootstrap
+Acquire::AllowInsecureRepositories "false";
+Acquire::AllowDowngradeToInsecureRepositories "false";

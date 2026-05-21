@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIOS Control Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: #333;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: #4caf50;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .list-item {
+            padding: 12px;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            background: #f9f9f9;
+        }
+
+        .list-item-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .list-item-detail {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .status-ok {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .status-error {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+
+        .status-pending {
+            background: #fff9c4;
+            color: #f57f17;
+        }
+
+        .resource-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .resource-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .resource-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .resource-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 24px;
+            }
+
+            .resource-overview {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><span class="status-indicator"></span>AIOS Control Panel</h1>
+            <p>Real-time AI OS Agent Management & Task Distribution</p>
+        </header>
+
+        <div class="grid">
+            <!-- Agents Card -->
+            <div class="card">
+                <h2>Agents</h2>
+                <div id="agentMessage"></div>
+                <div id="agentList" class="list"></div>
+                <button onclick="refreshAgents()" style="width: 100%; margin-top: 15px;">Refresh Agents</button>
+            </div>
+
+            <!-- Resources Card -->
+            <div class="card">
+                <h2>Global Resources</h2>
+                <div id="resourcesMessage"></div>
+                <div id="resourcesOverview" class="resource-overview"></div>
+                <button onclick="refreshResources()" style="width: 100%; margin-top: 15px;">Refresh Resources</button>
+            </div>
+        </div>
+
+        <!-- Create Agent Card -->
+        <div class="card" style="margin-bottom: 30px;">
+            <h2>Create New Agent</h2>
+            <form onsubmit="createAgent(event)">
+                <div class="form-group">
+                    <label>Agent ID</label>
+                    <input type="text" id="agentId" required placeholder="e.g., researcher-1">
+                </div>
+                <div class="form-group">
+                    <label>Roles (comma-separated)</label>
+                    <input type="text" id="agentRoles" required placeholder="e.g., task, compute, orchestration">
+                </div>
+                <div class="form-group">
+                    <label>Attributes (JSON)</label>
+                    <textarea id="agentAttrs" placeholder='{"priority": "high", "tier": 1}'></textarea>
+                </div>
+                <button type="submit" style="width: 100%;">Create Agent</button>
+            </form>
+            <div id="agentCreateMessage"></div>
+        </div>
+
+        <!-- Create Task Card -->
+        <div class="card">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab(event, 'scheduleTask')">Schedule Task</button>
+                <button class="tab" onclick="switchTab(event, 'autonomousGoal')">Autonomous Goal</button>
+            </div>
+
+            <!-- Schedule Task Tab -->
+            <div id="scheduleTask" class="tab-content active">
+                <h2>Schedule Task</h2>
+                <form onsubmit="scheduleTask(event)">
+                    <div class="form-group">
+                        <label>Task ID</label>
+                        <input type="text" id="taskId" required placeholder="e.g., task-analysis-001">
+                    </div>
+                    <div class="form-group">
+                        <label>Task Description</label>
+                        <input type="text" id="taskDescription" required placeholder="What should the agent do?">
+                    </div>
+                    <div class="form-group">
+                        <label>Agent ID</label>
+                        <input type="text" id="taskAgentId" placeholder="Defaults to orchestrator-1">
+                    </div>
+                    <div class="form-group">
+                        <label>Retry Limit</label>
+                        <input type="number" id="taskRetryLimit" value="3" min="1">
+                    </div>
+                    <button type="submit" style="width: 100%;">Schedule Task</button>
+                </form>
+                <div id="taskCreateMessage"></div>
+            </div>
+
+            <!-- Autonomous Goal Tab -->
+            <div id="autonomousGoal" class="tab-content">
+                <h2>Create Autonomous Goal</h2>
+                <form onsubmit="createAutonomousGoal(event)">
+                    <div class="form-group">
+                        <label>Goal ID</label>
+                        <input type="text" id="goalId" required placeholder="e.g., workspace-analysis">
+                    </div>
+                    <div class="form-group">
+                        <label>Goal Description</label>
+                        <input type="text" id="goalDescription" required placeholder="What is the goal?">
+                    </div>
+                    <div class="form-group">
+                        <label>Max Iterations</label>
+                        <input type="number" id="goalMaxIterations" value="3" min="1">
+                    </div>
+                    <button type="submit" style="width: 100%;">Create Goal</button>
+                </form>
+                <div id="goalCreateMessage"></div>
+            </div>
+        </div>
+
+        <!-- Tasks List Card -->
+        <div class="card" style="margin-top: 30px;">
+            <h2>Recent Tasks</h2>
+            <div id="tasksMessage"></div>
+            <div id="tasksList" class="list"></div>
+            <button onclick="refreshTasks()" style="width: 100%; margin-top: 15px;">Refresh Tasks</button>
+        </div>
+
+        <!-- Events Log Card -->
+        <div class="card" style="margin-top: 30px;">
+            <h2>Real-time Events</h2>
+            <div id="eventsList" class="list" style="max-height: 300px;"></div>
+            <button onclick="clearEvents()" style="width: 100%; margin-top: 15px;">Clear Events</button>
+        </div>
+
+        <!-- LLM Chat Card -->
+        <div class="card" style="margin-top: 30px;">
+            <h2>LLM Chat (Real APIs)</h2>
+            <form onsubmit="llmChat(event)">
+                <div class="form-group">
+                    <label>Model</label>
+                    <select id="llmModel">
+                        <option value="mock-llm-v1">Mock (Offline)</option>
+                        <option value="gpt-4o-mini">OpenAI GPT-4o Mini</option>
+                        <option value="claude-3-5-haiku-latest">Anthropic Claude 3.5 Haiku</option>
+                        <option value="llama-3.1-8b-instruct">LLaMA 3.1 8B (vLLM)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Prompt</label>
+                    <textarea id="llmPrompt" required placeholder="What would you like to ask the AI?" style="height: 100px;"></textarea>
+                </div>
+                <button type="submit" style="width: 100%;">Send to LLM</button>
+            </form>
+            <div id="llmMessage"></div>
+            <div id="llmResponse" class="list" style="max-height: 200px;"></div>
+        </div>
+
+        <!-- AI Browser Card -->
+        <div class="card" style="margin-top: 30px;">
+            <h2>AI Browser Control</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px;">
+                <button onclick="browserStart()">Start Browser</button>
+                <button onclick="browserStop()">Stop Browser</button>
+                <button onclick="getScreenshot()">Take Screenshot</button>
+            </div>
+            <div id="browserStatus" class="list" style="margin-bottom: 15px;"></div>
+            <div>
+                <p style="margin-bottom: 10px;"><strong>Autonomous Browser Goal:</strong></p>
+                <div class="form-group">
+                    <label>Goal</label>
+                    <textarea id="browserGoal" placeholder="e.g., Search for AI news and summarize top 3 articles" style="height: 80px;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Model for Planning</label>
+                    <select id="browserModel">
+                        <option value="gpt-4o-mini">GPT-4o Mini</option>
+                        <option value="claude-3-5-haiku-latest">Claude 3.5 Haiku</option>
+                        <option value="mock-llm-v1">Mock</option>
+                    </select>
+                </div>
+                <button onclick="runBrowserGoal()" style="width: 100%;">Run Autonomous Goal</button>
+            </div>
+            <div id="browserMessage"></div>
+            <div id="browserOutput" class="list" style="max-height: 300px; margin-top: 15px;"></div>
+        </div>
+
+        <!-- Screenshot Preview -->
+        <div class="card" style="margin-top: 30px;">
+            <h2>Live Screenshot</h2>
+            <div id="screenshotContainer" style="width: 100%; overflow: auto; background: #f0f0f0; border-radius: 8px; padding: 10px; text-align: center;">
+                <p style="color: #999;">No screenshot yet. Click "Take Screenshot" to capture.</p>
+            </div>
+        </div>
+
+        <!-- Events Log Card -->
+        <div class="card" style="margin-top: 30px;">
+            <h2>Real-time Events</h2>
+            <div id="eventsList" class="list" style="max-height: 300px;"></div>
+            <button onclick="clearEvents()" style="width: 100%; margin-top: 15px;">Clear Events</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "/api";
+        const WS_URL = `ws://${window.location.host}/ws/events`;
+
+        let ws = null;
+        let eventLog = [];
+        const MAX_EVENTS = 50;
+
+        // Initialize WebSocket connection
+        function initWebSocket() {
+            ws = new WebSocket(WS_URL);
+            ws.onmessage = (event) => {
+                const msg = JSON.parse(event.data);
+                addEvent(msg);
+            };
+            ws.onerror = () => {
+                addEvent({ type: "error", data: "WebSocket connection error" });
+            };
+            ws.onclose = () => {
+                addEvent({ type: "info", data: "WebSocket disconnected, reconnecting..." });
+                setTimeout(initWebSocket, 3000);
+            };
+        }
+
+        // API Calls
+        async function refreshAgents() {
+            try {
+                const res = await fetch(`${API_BASE}/agents`);
+                const data = await res.json();
+                displayAgents(data.agents);
+            } catch (error) {
+                showError("agentMessage", `Failed to fetch agents: ${error}`);
+            }
+        }
+
+        async function refreshResources() {
+            try {
+                const res = await fetch(`${API_BASE}/resources`);
+                const data = await res.json();
+                displayResources(data);
+            } catch (error) {
+                showError("resourcesMessage", `Failed to fetch resources: ${error}`);
+            }
+        }
+
+        async function refreshTasks() {
+            try {
+                const res = await fetch(`${API_BASE}/tasks`);
+                const data = await res.json();
+                displayTasks(data.tasks);
+            } catch (error) {
+                showError("tasksMessage", `Failed to fetch tasks: ${error}`);
+            }
+        }
+
+        async function createAgent(event) {
+            event.preventDefault();
+            const agentId = document.getElementById("agentId").value;
+            const roles = document.getElementById("agentRoles").value.split(",").map(r => r.trim());
+            const attrsStr = document.getElementById("agentAttrs").value || "{}";
+            
+            try {
+                const attributes = JSON.parse(attrsStr);
+                const res = await fetch(`${API_BASE}/agents`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ agent_id: agentId, roles, attributes }),
+                });
+                const data = await res.json();
+                
+                if (data.status === "ok") {
+                    showSuccess("agentCreateMessage", `Agent '${agentId}' created successfully`);
+                    document.getElementById("agentId").value = "";
+                    document.getElementById("agentRoles").value = "";
+                    document.getElementById("agentAttrs").value = "";
+                    refreshAgents();
+                } else {
+                    showError("agentCreateMessage", `Failed: ${data.reason}`);
+                }
+            } catch (error) {
+                showError("agentCreateMessage", `Error: ${error}`);
+            }
+        }
+
+        async function scheduleTask(event) {
+            event.preventDefault();
+            const taskId = document.getElementById("taskId").value;
+            const description = document.getElementById("taskDescription").value;
+            const agentId = document.getElementById("taskAgentId").value || "orchestrator-1";
+            const retryLimit = parseInt(document.getElementById("taskRetryLimit").value);
+
+            try {
+                const res = await fetch(`${API_BASE}/tasks`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        enabled: true,
+                        default_agent_id: agentId,
+                        goal_tasks: [{
+                            id: taskId,
+                            description,
+                            retry_limit: retryLimit
+                        }]
+                    }),
+                });
+                const data = await res.json();
+                
+                if (data.status === "ok") {
+                    showSuccess("taskCreateMessage", `Task '${taskId}' scheduled successfully`);
+                    document.getElementById("taskId").value = "";
+                    document.getElementById("taskDescription").value = "";
+                    document.getElementById("taskAgentId").value = "";
+                    refreshTasks();
+                } else {
+                    showError("taskCreateMessage", `Failed: ${data.reason}`);
+                }
+            } catch (error) {
+                showError("taskCreateMessage", `Error: ${error}`);
+            }
+        }
+
+        async function createAutonomousGoal(event) {
+            event.preventDefault();
+            const goalId = document.getElementById("goalId").value;
+            const description = document.getElementById("goalDescription").value;
+            const maxIterations = parseInt(document.getElementById("goalMaxIterations").value);
+
+            try {
+                const res = await fetch(`${API_BASE}/tasks`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        enabled: true,
+                        default_agent_id: "orchestrator-1",
+                        goal_tasks: [{
+                            id: goalId,
+                            description,
+                            max_iterations: maxIterations,
+                            retry_limit: 1
+                        }]
+                    }),
+                });
+                const data = await res.json();
+                
+                if (data.status === "ok") {
+                    showSuccess("goalCreateMessage", `Goal '${goalId}' created successfully`);
+                    document.getElementById("goalId").value = "";
+                    document.getElementById("goalDescription").value = "";
+                    refreshTasks();
+                } else {
+                    showError("goalCreateMessage", `Failed: ${data.reason}`);
+                }
+            } catch (error) {
+                showError("goalCreateMessage", `Error: ${error}`);
+            }
+        }
+
+        // Display Functions
+        function displayAgents(agents) {
+            const list = document.getElementById("agentList");
+            if (agents.length === 0) {
+                list.innerHTML = "<p style='color: #666;'>No agents running.</p>";
+                return;
+            }
+
+            list.innerHTML = agents.map(agent => `
+                <div class="list-item">
+                    <div class="list-item-title">${agent.agent_id}</div>
+                    <div class="list-item-detail">
+                        <span class="status-badge status-ok">Roles: ${agent.roles.join(", ")}</span>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        function displayResources(data) {
+            const overview = document.getElementById("resourcesOverview");
+            if (!data.nodes || data.nodes.length === 0) {
+                overview.innerHTML = "<p style='color: #666;'>No resource data available.</p>";
+                return;
+            }
+
+            let html = "";
+            for (const node of data.nodes) {
+                html += `
+                    <div class="resource-item">
+                        <div class="resource-label">${node.node_id}</div>
+                        <div class="resource-value">${node.cpu.available}/${node.cpu.total}</div>
+                        <div class="resource-label">CPU available</div>
+                    </div>
+                    <div class="resource-item">
+                        <div class="resource-label">${node.node_id}</div>
+                        <div class="resource-value">${Math.round(node.memory_mb.available/1024)}/${Math.round(node.memory_mb.total/1024)}</div>
+                        <div class="resource-label">GB Memory</div>
+                    </div>
+                `;
+            }
+            overview.innerHTML = html;
+        }
+
+        function displayTasks(tasks) {
+            const list = document.getElementById("tasksList");
+            if (tasks.length === 0) {
+                list.innerHTML = "<p style='color: #666;'>No tasks recorded.</p>";
+                return;
+            }
+
+            list.innerHTML = tasks.slice(-10).reverse().map(task => `
+                <div class="list-item">
+                    <div class="list-item-title">${task.data?.goal_id || task.event_id}</div>
+                    <div class="list-item-detail">
+                        <span class="status-badge ${task.data?.attempt ? 'status-pending' : 'status-ok'}">
+                            ${task.event_type}
+                        </span>
+                        <span style="color: #999; font-size: 11px;">${new Date(task.timestamp).toLocaleTimeString()}</span>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        function addEvent(event) {
+            eventLog.unshift(event);
+            if (eventLog.length > MAX_EVENTS) {
+                eventLog.pop();
+            }
+            
+            const list = document.getElementById("eventsList");
+            const eventItem = document.createElement("div");
+            eventItem.className = "list-item";
+            eventItem.innerHTML = `
+                <div class="list-item-detail">
+                    <strong>${event.type || 'event'}</strong>: ${
+                        typeof event.data === 'object' ? JSON.stringify(event.data).substring(0, 100) : event.data
+                    }
+                </div>
+            `;
+            list.insertBefore(eventItem, list.firstChild);
+        }
+
+        function clearEvents() {
+            eventLog = [];
+            document.getElementById("eventsList").innerHTML = "";
+        }
+
+        function switchTab(event, tabName) {
+            event.preventDefault();
+            
+            // Hide all tabs
+            document.querySelectorAll(".tab-content").forEach(tab => {
+                tab.classList.remove("active");
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll(".tab").forEach(tab => {
+                tab.classList.remove("active");
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add("active");
+            event.target.classList.add("active");
+        }
+
+        function showError(elementId, message) {
+            const el = document.getElementById(elementId);
+            el.innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        function showSuccess(elementId, message) {
+            const el = document.getElementById(elementId);
+            el.innerHTML = `<div class="success">${message}</div>`;
+            setTimeout(() => {
+                el.innerHTML = "";
+            }, 3000);
+        }
+
+        // ── LLM Chat ──────────────────────────────────────────────────────
+
+        async function llmChat(event) {
+            event.preventDefault();
+            const model = document.getElementById("llmModel").value;
+            const prompt = document.getElementById("llmPrompt").value;
+            
+            if (!prompt.trim()) {
+                showError("llmMessage", "Prompt cannot be empty");
+                return;
+            }
+            
+            document.getElementById("llmResponse").innerHTML = "<p style='color: #999;'>Waiting for response...</p>";
+            
+            try {
+                const res = await fetch(`${API_BASE}/llm/chat`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ model, prompt }),
+                });
+                const data = await res.json();
+                
+                if (data.status === "ok") {
+                    const output = data.output || data.message?.content || "";
+                    document.getElementById("llmResponse").innerHTML = `
+                        <div class="list-item">
+                            <div class="list-item-title">${model}</div>
+                            <div class="list-item-detail">${output.substring(0, 500)}</div>
+                        </div>
+                    `;
+                    document.getElementById("llmPrompt").value = "";
+                    showSuccess("llmMessage", "Response received!");
+                } else {
+                    showError("llmMessage", `Error: ${data.reason}`);
+                }
+            } catch (error) {
+                showError("llmMessage", `Failed: ${error}`);
+            }
+        }
+
+        // ── AI Browser ────────────────────────────────────────────────────
+
+        async function browserStart() {
+            try {
+                const res = await fetch(`${API_BASE}/browser/start`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ headless: true }),
+                });
+                const data = await res.json();
+                if (data.status === "ok") {
+                    showSuccess("browserMessage", "Browser started!");
+                    updateBrowserStatus();
+                } else {
+                    showError("browserMessage", `Failed: ${data.reason}`);
+                }
+            } catch (error) {
+                showError("browserMessage", `Error: ${error}`);
+            }
+        }
+
+        async function browserStop() {
+            try {
+                const res = await fetch(`${API_BASE}/browser/stop`, { method: "POST" });
+                const data = await res.json();
+                if (data.status === "ok") {
+                    showSuccess("browserMessage", "Browser stopped!");
+                    updateBrowserStatus();
+                } else {
+                    showError("browserMessage", `Failed: ${data.reason}`);
+                }
+            } catch (error) {
+                showError("browserMessage", `Error: ${error}`);
+            }
+        }
+
+        async function getScreenshot() {
+            try {
+                const res = await fetch(`${API_BASE}/browser/screenshot`);
+                const data = await res.json();
+                if (data.status === "ok") {
+                    const container = document.getElementById("screenshotContainer");
+                    container.innerHTML = `<img src="data:image/png;base64,${data.base64}" style="max-width: 100%; border-radius: 8px;">`;
+                    showSuccess("browserMessage", "Screenshot captured!");
+                } else {
+                    showError("browserMessage", `Failed: ${data.reason}`);
+                }
+            } catch (error) {
+                showError("browserMessage", `Error: ${error}`);
+            }
+        }
+
+        async function runBrowserGoal() {
+            const goal = document.getElementById("browserGoal").value;
+            const model = document.getElementById("browserModel").value;
+            
+            if (!goal.trim()) {
+                showError("browserMessage", "Goal cannot be empty");
+                return;
+            }
+            
+            document.getElementById("browserOutput").innerHTML = "<p style='color: #999;'>Running autonomous goal...</p>";
+            
+            try {
+                const res = await fetch(`${API_BASE}/browser/goal`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ goal, model, max_steps: 10 }),
+                });
+                const data = await res.json();
+                
+                if (data.status === "ok") {
+                    document.getElementById("browserOutput").innerHTML = `
+                        <div class="list-item">
+                            <div class="list-item-title">Goal: ${goal}</div>
+                            <div class="list-item-detail">
+                                Steps: ${data.steps}<br/>
+                                Summary: ${data.summary}<br/>
+                                Final URL: ${data.final_url}
+                            </div>
+                        </div>
+                    `;
+                    showSuccess("browserMessage", "Goal completed!");
+                    setTimeout(getScreenshot, 1000);
+                } else {
+                    showError("browserMessage", `Error: ${data.reason}`);
+                }
+            } catch (error) {
+                showError("browserMessage", `Failed: ${error}`);
+            }
+        }
+
+        async function updateBrowserStatus() {
+            try {
+                const res = await fetch(`${API_BASE}/browser/status`);
+                const data = await res.json();
+                const statusEl = document.getElementById("browserStatus");
+                const badge = data.status === "running" ? "status-ok" : "status-pending";
+                statusEl.innerHTML = `
+                    <div class="list-item">
+                        <div class="list-item-title">Status: <span class="status-badge ${badge}">${data.status}</span></div>
+                        <div class="list-item-detail">URL: ${data.url || "(not loaded)"}</div>
+                    </div>
+                `;
+            } catch (error) {
+                console.log("Could not update browser status");
+            }
+        }
+
+        // Initialize on load
+        window.addEventListener("load", () => {
+            initWebSocket();
+            refreshAgents();
+            refreshResources();
+            refreshTasks();
+            updateBrowserStatus();
+            
+            // Auto-refresh every 5 seconds
+            setInterval(() => {
+                refreshAgents();
+                refreshResources();
+                refreshTasks();
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

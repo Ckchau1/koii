@@ -1,0 +1,132 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+*.manifest
+*.spec
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+*.cover
+*.log
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Build artifacts
+*.deb
+*.iso
+*.img
+*.tar.gz
+*.zip
+ai-os-build/
+debian-build/
+nspawn-build/
+scripts/build/
+
+# Logs
+logs/
+*.log
+koii-packages-build.log
+debian-build-live.log
+
+# Data and cache
+data/
+local/
+.koii/
+.cache/
+*.db
+*.sqlite
+*.sqlite3
+
+# Documentation (keep only essential docs)
+*.md
+!README.md
+!DOCKER.md
+
+# Debian/Ubuntu build files
+koii-packages/
+koii-settings/po/
+*.deb
+
+# Electron build
+electron/node_modules/
+electron/dist/
+electron/out/
+
+# Test files
+tests/
+test_*.py
+*_test.py
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+
+# OS specific
+Thumbs.db
+desktop.ini
+
+# Bob AI assistant
+.bob/
+
+# Scripts we don't need in container
+scripts/build_*.sh
+scripts/fix_*.sh
+scripts/doctor-*.sh
+scripts/monitor_*.sh
+scripts/verify_*.sh
+scripts/install-*.sh
+scripts/aios.txt
+scripts/koii
+scripts/koii.cmd

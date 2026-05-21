@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="koii-settings">
+  <schema id="org.koii.Settings" path="/org/koii/Settings/">
+    
+    <!-- Window State -->
+    <key name="window-width" type="i">
+      <default>1000</default>
+      <summary>Window width</summary>
+      <description>The width of the main window</description>
+    </key>
+    
+    <key name="window-height" type="i">
+      <default>700</default>
+      <summary>Window height</summary>
+      <description>The height of the main window</description>
+    </key>
+    
+    <key name="window-maximized" type="b">
+      <default>false</default>
+      <summary>Window maximized state</summary>
+      <description>Whether the window is maximized</description>
+    </key>
+    
+    <!-- Agent System Settings -->
+    <key name="initiative-level" type="s">
+      <choices>
+        <choice value="passive"/>
+        <choice value="balanced"/>
+        <choice value="highly-initiative"/>
+      </choices>
+      <default>'balanced'</default>
+      <summary>Agent initiative level</summary>
+      <description>Controls how proactive the semantic-driven agents are</description>
+    </key>
+    
+    <key name="initiative-score-threshold" type="d">
+      <default>0.6</default>
+      <range min="0.0" max="1.0"/>
+      <summary>Initiative score threshold</summary>
+      <description>Minimum score required for agent to take initiative (0.0-1.0)</description>
+    </key>
+    
+    <key name="enable-reflexion" type="b">
+      <default>true</default>
+      <summary>Enable reflexion mechanism</summary>
+      <description>Allow agents to reflect on and improve their responses</description>
+    </key>
+    
+    <key name="max-agent-memory-mb" type="i">
+      <default>2048</default>
+      <summary>Maximum agent memory</summary>
+      <description>Maximum memory allocation per agent in MB</description>
+    </key>
+    
+    <key name="agent-cpu-quota" type="i">
+      <default>50</default>
+      <range min="10" max="100"/>
+      <summary>Agent CPU quota</summary>
+      <description>CPU quota percentage for agents</description>
+    </key>
+    
+    <!-- AI Browser Settings -->
+    <key name="browser-semantic-mode" type="b">
+      <default>true</default>
+      <summary>Enable semantic-driven browsing</summary>
+      <description>Enable AI-powered semantic understanding in browser</description>
+    </key>
+    
+    <key name="browser-privacy-level" type="s">
+      <choices>
+        <choice value="strict"/>
+        <choice value="balanced"/>
+        <choice value="permissive"/>
+      </choices>
+      <default>'balanced'</default>
+      <summary>Browser privacy level</summary>
+      <description>Privacy protection level for AI browser</description>
+    </key>
+    
+    <key name="browser-auto-summarize" type="b">
+      <default>true</default>
+      <summary>Auto-summarize pages</summary>
+      <description>Automatically generate page summaries</description>
+    </key>
+    
+    <!-- Task System Settings -->
+    <key name="task-auto-planning" type="b">
+      <default>true</default>
+      <summary>Enable automatic task planning</summary>
+      <description>Allow agents to automatically plan and break down tasks</description>
+    </key>
+    
+    <key name="task-max-concurrent" type="i">
+      <default>5</default>
+      <range min="1" max="20"/>
+      <summary>Maximum concurrent tasks</summary>
+      <description>Maximum number of tasks that can run simultaneously</description>
+    </key>
+    
+    <key name="task-history-days" type="i">
+      <default>30</default>
+      <summary>Task history retention</summary>
+      <description>Number of days to keep task history</description>
+    </key>
+    
+    <!-- Security Settings -->
+    <key name="enable-audit-log" type="b">
+      <default>true</default>
+      <summary>Enable audit logging</summary>
+      <description>Log all agent actions for security auditing</description>
+    </key>
+    
+    <key name="require-confirmation" type="b">
+      <default>true</default>
+      <summary>Require user confirmation</summary>
+      <description>Require user confirmation for sensitive operations</description>
+    </key>
+    
+    <key name="log-retention-days" type="i">
+      <default>90</default>
+      <summary>Log retention period</summary>
+      <description>Number of days to keep security logs</description>
+    </key>
+    
+    <!-- LLM Provider Settings -->
+    <key name="llm-provider" type="s">
+      <choices>
+        <choice value="openai"/>
+        <choice value="anthropic"/>
+        <choice value="vllm"/>
+        <choice value="mock"/>
+      </choices>
+      <default>'mock'</default>
+      <summary>LLM provider</summary>
+      <description>Default LLM provider for agents</description>
+    </key>
+    
+    <key name="llm-model" type="s">
+      <default>''</default>
+      <summary>LLM model name</summary>
+      <description>Specific model to use with the provider</description>
+    </key>
+
+    <key name="llm-base-url" type="s">
+      <default>''</default>
+      <summary>LLM base API URL</summary>
+      <description>Base API URL for OpenAI-compatible or local LLM providers</description>
+    </key>
+
+    <key name="llm-api-key-secret-id" type="s">
+      <default>''</default>
+      <summary>LLM API key secret ID</summary>
+      <description>Secret Service item identifier for the LLM API key</description>
+    </key>
+    
+    <key name="llm-temperature" type="d">
+      <default>0.7</default>
+      <range min="0.0" max="2.0"/>
+      <summary>LLM temperature</summary>
+      <description>Temperature parameter for LLM generation</description>
+    </key>
+    
+    <key name="llm-max-tokens" type="i">
+      <default>2048</default>
+      <summary>Maximum tokens</summary>
+      <description>Maximum tokens for LLM responses</description>
+    </key>
+
+    <!-- Koii OS mode and built-in agent toggles -->
+    <key name="system-mode" type="s">
+      <choices>
+        <choice value="development"/>
+        <choice value="production"/>
+        <choice value="privacy"/>
+        <choice value="learning"/>
+        <choice value="highly-initiative"/>
+      </choices>
+      <default>'development'</default>
+      <summary>Koii OS system mode</summary>
+      <description>High-level operating mode for Koii OS</description>
+    </key>
+
+    <key name="plugin-agent-enabled" type="b">
+      <default>true</default>
+      <summary>Enable Plugin Development Agent</summary>
+      <description>Allow the Plugin Development Agent to generate, test, and deploy API plugins</description>
+    </key>
+
+    <key name="core-settings-agent-enabled" type="b">
+      <default>true</default>
+      <summary>Enable Core Settings Agent</summary>
+      <description>Allow the Core Settings Agent to manage Koii OS core parameters</description>
+    </key>
+
+    <key name="mode-settings-agent-enabled" type="b">
+      <default>true</default>
+      <summary>Enable Mode Settings Agent</summary>
+      <description>Allow the Mode Settings Agent to switch Koii OS operating modes</description>
+    </key>
+    
+  </schema>
+</schemalist>
+
+<!-- Made with Bob -->

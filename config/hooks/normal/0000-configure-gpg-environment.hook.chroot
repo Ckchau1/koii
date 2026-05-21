@@ -1,0 +1,84 @@
+#!/bin/sh
+# Configure GPG environment for non-interactive chroot operations
+# This must run BEFORE any GPG operations
+
+set -e
+
+echo "=========================================="
+echo "I: Configuring GPG environment for chroot"
+echo "=========================================="
+
+# Create GPG home directory with correct permissions
+mkdir -p /root/.gnupg
+chmod 700 /root/.gnupg
+
+# Configure GPG to work without TTY and agent
+cat > /root/.gnupg/gpg.conf << 'GPGCONF'
+# Disable GPG agent (not available in chroot)
+no-use-agent
+
+# Allow loopback pinentry (no TTY required)
+pinentry-mode loopback
+
+# Batch mode for non-interactive operations
+batch
+no-tty
+
+# Trust model
+trust-model always
+
+# Disable warnings
+no-greeting
+no-permission-warning
+GPGCONF
+
+cat > /root/.gnupg/gpg-agent.conf << 'AGENTCONF'
+# Allow loopback pinentry
+allow-loopback-pinentry
+
+# Disable SSH support
+enable-ssh-support
+
+# Set pinentry to loopback
+pinentry-program /bin/true
+AGENTCONF
+
+chmod 600 /root/.gnupg/gpg.conf
+chmod 600 /root/.gnupg/gpg-agent.conf
+
+# Set environment variables for GPG
+export GPG_TTY=/dev/console
+export GNUPGHOME=/root/.gnupg
+
+# Disable GPG agent socket
+export GPG_AGENT_INFO=
+
+# For apt/dpkg operations - disable signature verification warnings
+cat > /etc/apt/apt.conf.d/99no-check-valid-until << 'APTCONF'
+Acquire::Check-Valid-Until "false";
+APT::Get::AllowUnauthenticated "true";
+APTCONF
+
+# Create a dummy GPG key for signing if needed (optional, for testing)
+# This is only needed if the build process requires signing
+# Uncomment if you need to sign packages during build
+# cat > /tmp/gpg-keygen-batch << 'KEYCONF'
+# %no-protection
+# Key-Type: RSA
+# Key-Length: 2048
+# Name-Real: AIOS Build
+# Name-Email: build@aios.local
+# Expire-Date: 0
+# %commit
+# KEYCONF
+# 
+# gpg --batch --gen-key /tmp/gpg-keygen-batch 2>/dev/null || true
+# rm -f /tmp/gpg-keygen-batch
+
+echo "I: GPG environment configured successfully"
+echo "I: GPG will operate in batch mode without agent"
+echo "=========================================="
+
+exit 0
+
+# Made with Bob

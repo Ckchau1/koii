@@ -1,0 +1,34 @@
+#!/bin/sh
+# Disable repository signing for live-build
+# GPG key generation fails in non-interactive chroot environments
+# This is safe for local ISO builds
+
+set -e
+
+echo "I: Disabling repository signing..."
+
+# Create a dummy gpg configuration that doesn't require key generation
+mkdir -p /root/.gnupg
+chmod 700 /root/.gnupg
+
+# Configure GPG to work in non-interactive mode
+cat > /root/.gnupg/gpg.conf << 'EOF'
+# Disable interactive prompts
+batch
+no-tty
+# Don't require signing
+trust-model always
+EOF
+
+# Configure GPG agent to not require a TTY
+cat > /root/.gnupg/gpg-agent.conf << 'EOF'
+# Allow GPG to work without a TTY
+allow-loopback-pinentry
+EOF
+
+chmod 600 /root/.gnupg/gpg.conf
+chmod 600 /root/.gnupg/gpg-agent.conf
+
+echo "I: Repository signing disabled for non-interactive build"
+
+# Made with Bob

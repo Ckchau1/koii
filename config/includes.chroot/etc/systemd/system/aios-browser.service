@@ -1,0 +1,36 @@
+[Unit]
+Description=Koii AIOS AI Browser Service
+Documentation=https://koii.network
+After=network-online.target aios-agent.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=aios
+Group=aios
+WorkingDirectory=/opt/aios/electron
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+Environment="DISPLAY=:0"
+Environment="ELECTRON_ENABLE_LOGGING=1"
+Environment="AIOS_DATA_DIR=/var/lib/aios/data"
+
+# Start the Electron AI browser
+ExecStart=/usr/bin/npm start
+
+# Restart policy
+Restart=on-failure
+RestartSec=10s
+StartLimitInterval=300
+StartLimitBurst=5
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=aios-browser
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,36 @@
+#!/bin/sh
+# Install GPG early in chroot to prevent package verification errors
+# This must run before any package operations
+
+set -e
+
+echo "I: Installing GPG in chroot environment..."
+
+# Set GPG environment variables for non-interactive operation
+export GPG_TTY=/dev/console
+export GNUPGHOME=/root/.gnupg
+export GPG_AGENT_INFO=
+export DEBIAN_FRONTEND=noninteractive
+
+# Ensure GPG directory exists with correct permissions
+mkdir -p /root/.gnupg
+chmod 700 /root/.gnupg
+
+# Update package lists
+apt-get update -o Acquire::Check-Valid-Until=false || true
+
+# Install gnupg with all dependencies
+apt-get install -y --no-install-recommends gnupg
+
+# Verify installation
+if command -v gpg >/dev/null 2>&1; then
+    echo "I: GPG installed successfully"
+    gpg --version | head -n 1
+else
+    echo "E: Failed to install GPG"
+    exit 1
+fi
+
+echo "I: GPG installation complete"
+
+# Made with Bob

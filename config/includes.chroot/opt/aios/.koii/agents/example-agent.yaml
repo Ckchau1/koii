@@ -1,0 +1,5 @@
+name: example-agent
+description: A sample agent that runs code review and reporting
+roles:
+  - reviewer
+goal: Run code review on pull requests

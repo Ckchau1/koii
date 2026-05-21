@@ -1,0 +1,25 @@
+name: Build AIOS Ubuntu ISO
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-iso:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build ISO
+        run: |
+          chmod +x scripts/build_ubuntu_aios_iso.sh
+          sudo OUTPUT_ISO="$GITHUB_WORKSPACE/build/AIOS-Ubuntu-24.04.2.iso" scripts/build_ubuntu_aios_iso.sh
+
+      - name: Upload ISO Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aios-ubuntu-iso
+          path: build/AIOS-Ubuntu-24.04.2.iso
+          if-no-files-found: error

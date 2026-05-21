@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Simple wrapper to run AIOS CLI tools and read .koii settings
+ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CONFIG_OVERRIDE="$ROOT_DIR/.koii/settings.local.json"
+
+cmd="$1"; shift || true
+case "$cmd" in
+  start)
+    echo "Starting AIOS from source..."
+    python3 -m src.main
+    ;;
+  run-agent)
+    name="$1"
+    if [[ -z "$name" ]]; then
+      echo "usage: koii run-agent <agent-name>"
+      exit 1
+    fi
+    python3 -m src.koii_cli agent run --name "$name"
+    ;;
+  cli)
+    # pass-through to the CLI module
+    python3 -m src.koii_cli "$@"
+    ;;
+  settings)
+    if [[ -x /usr/local/bin/aios-settings ]]; then
+      /usr/local/bin/aios-settings
+    else
+      echo "AIOS settings tool not installed; open /opt/aios/.env manually."
+    fi
+    ;;
+  *)
+    echo "KOII helper - commands: start | run-agent | cli | settings"
+    exit 0
+    ;;
+esac

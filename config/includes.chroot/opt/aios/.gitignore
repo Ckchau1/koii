@@ -1,0 +1,5 @@
+.koii/settings.local.json
+opt/aios/.env
+*.pyc
+__pycache__/
+.env

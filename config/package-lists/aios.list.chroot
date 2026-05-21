@@ -1,0 +1,46 @@
+# Desktop environment
+ubuntu-desktop-minimal
+gnome-session
+gdm3
+gnome-shell-extension-appindicator
+gnome-tweaks
+
+# Development tools
+python3
+python3-pip
+python3-venv
+python3-dev
+build-essential
+git
+curl
+wget
+
+# Container runtime
+docker.io
+docker-compose
+
+# Node.js and npm (for Electron browser)
+nodejs
+npm
+
+# Browser and automation
+chromium-browser
+chromium-chromedriver
+
+# System utilities
+htop
+neofetch
+vim
+nano
+whiptail
+sqlite3
+jq
+
+# Network tools
+net-tools
+iputils-ping
+dnsutils
+
+# Security
+gnupg
+ca-certificates

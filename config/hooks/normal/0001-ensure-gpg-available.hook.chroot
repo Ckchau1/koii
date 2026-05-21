@@ -1,0 +1,65 @@
+#!/bin/sh
+# Early GPG installation hook - runs in normal stage (right after debootstrap)
+# This ensures GPG is available before any apt operations that require verification
+
+set -e
+
+echo "=========================================="
+echo "I: Early GPG availability check and installation"
+echo "=========================================="
+
+# Set GPG environment variables for non-interactive operation
+export GPG_TTY=/dev/console
+export GNUPGHOME=/root/.gnupg
+export GPG_AGENT_INFO=
+
+# Check if gpg command exists
+if command -v gpg >/dev/null 2>&1; then
+    echo "I: GPG is already available"
+    gpg --version | head -n 1
+    exit 0
+fi
+
+echo "W: GPG not found, attempting emergency installation..."
+
+# Set environment to allow installation without GPG verification
+export DEBIAN_FRONTEND=noninteractive
+export APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1
+
+# Update package lists (allow insecure repositories temporarily)
+echo "I: Updating package lists..."
+apt-get update \
+    -o Acquire::AllowInsecureRepositories=true \
+    -o Acquire::AllowDowngradeToInsecureRepositories=true \
+    -o Acquire::Check-Valid-Until=false \
+    || echo "W: apt-get update had warnings, continuing..."
+
+# Install gnupg without verification (bootstrap emergency)
+echo "I: Installing gnupg package..."
+apt-get install -y --allow-unauthenticated \
+    gnupg \
+    gnupg2 \
+    ca-certificates \
+    || {
+        echo "E: Failed to install gnupg"
+        exit 1
+    }
+
+# Verify installation
+if command -v gpg >/dev/null 2>&1; then
+    echo "=========================================="
+    echo "I: GPG successfully installed"
+    gpg --version | head -n 1
+    echo "=========================================="
+    
+    # Now update package lists again with proper GPG verification
+    echo "I: Updating package lists with GPG verification..."
+    apt-get update -o Acquire::Check-Valid-Until=false || echo "W: apt-get update completed with warnings"
+    
+    exit 0
+else
+    echo "E: GPG installation failed - command not found after install"
+    exit 1
+fi
+
+# Made with Bob

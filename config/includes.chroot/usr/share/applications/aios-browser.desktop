@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Koii AI Browser
+GenericName=AI-Powered Web Browser
+Comment=Browse the web with AI assistance and automation
+Icon=/opt/aios/electron/icon.png
+Exec=/opt/aios/electron/start-browser.sh
+Terminal=false
+Categories=Network;WebBrowser;
+Keywords=browser;web;ai;automation;koii;
+StartupNotify=true
+StartupWMClass=koii-browser

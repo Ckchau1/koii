@@ -1,0 +1,18 @@
+Package: aios-core
+Version: 1.0.0
+Section: misc
+Priority: optional
+Architecture: all
+Maintainer: Koii AIOS Team <support@koii.network>
+Depends: python3 (>= 3.10), python3-pip, python3-venv, git, curl, docker.io, docker-compose-plugin, nodejs (>= 18), npm, chromium-browser, sqlite3, whiptail, gnupg
+Recommends: gnome-shell-extension-appindicator, gnome-tweaks
+Description: Koii AIOS - AI Operating System Core
+ Complete AI Operating System with Koii agent integration,
+ browser automation, task scheduling, and distributed computing.
+ .
+ This package includes:
+  - Koii CLI and agent runtime
+  - AI browser automation engine
+  - Task center and scheduler
+  - Electron-based AI browser
+  - System integration and services

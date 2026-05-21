@@ -1,0 +1,80 @@
+#!/bin/bash
+set -e
+
+# AIOS Core Post-Installation Script
+# This script runs after the package is installed
+
+case "$1" in
+    configure)
+        echo "Configuring AIOS Core..."
+        
+        # Create AIOS system user if it doesn't exist
+        if ! id -u aios >/dev/null 2>&1; then
+            useradd -r -s /bin/bash -d /opt/aios -m -c "AIOS System User" aios
+            usermod -aG docker aios 2>/dev/null || true
+        fi
+        
+        # Set proper permissions
+        chown -R aios:aios /opt/aios
+        chmod 755 /opt/aios
+        
+        # Create data directories
+        mkdir -p /var/lib/aios/{data,logs,cache,workspace}
+        chown -R aios:aios /var/lib/aios
+        chmod 755 /var/lib/aios
+        
+        # Create Python virtual environment
+        if [ ! -d /opt/aios/.venv ]; then
+            echo "Creating Python virtual environment..."
+            su - aios -c "cd /opt/aios && python3 -m venv .venv"
+            su - aios -c "cd /opt/aios && .venv/bin/pip install --upgrade pip setuptools wheel"
+            
+            # Install Python dependencies if requirements.txt exists
+            if [ -f /opt/aios/requirements.txt ]; then
+                su - aios -c "cd /opt/aios && .venv/bin/pip install -r requirements.txt"
+            fi
+        fi
+        
+        # Install Electron browser dependencies
+        if [ -d /opt/aios/electron ] && [ -f /opt/aios/electron/package.json ]; then
+            echo "Installing Electron browser dependencies..."
+            su - aios -c "cd /opt/aios/electron && npm install --production"
+        fi
+        
+        # Create symbolic links for CLI tools
+        ln -sf /opt/aios/scripts/koii /usr/local/bin/koii
+        chmod +x /usr/local/bin/koii
+        
+        # Enable and start systemd services
+        systemctl daemon-reload
+        systemctl enable aios-agent.service
+        systemctl enable aios-browser.service
+        systemctl enable aios-scheduler.service
+        
+        # Don't start services during installation - let user start them
+        echo "AIOS services enabled. Start with: sudo systemctl start aios-agent"
+        
+        # Create desktop shortcuts for all users
+        if [ -d /etc/skel/Desktop ]; then
+            cp /usr/share/applications/aios-*.desktop /etc/skel/Desktop/ 2>/dev/null || true
+        fi
+        
+        # Update desktop database
+        update-desktop-database /usr/share/applications 2>/dev/null || true
+        
+        echo "AIOS Core installation completed successfully!"
+        echo "Run 'koii --help' to get started"
+        ;;
+        
+    abort-upgrade|abort-remove|abort-deconfigure)
+        ;;
+        
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+        ;;
+esac
+
+exit 0
+
+# Made with Bob

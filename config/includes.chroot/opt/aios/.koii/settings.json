@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow_shell": true,
+    "allowed_commands": ["pwd","whoami","ls","git","docker","systemctl"]
+  },
+  "hooks": {
+    "on_start": "scripts/agent_start.sh",
+    "on_task_complete": "scripts/task_complete.sh"
+  },
+  "environment": {
+    "KOII_LLM_PROFILE": "offline",
+    "KOII_VLLM_ENDPOINT": "http://localhost:8000"
+  }
+}

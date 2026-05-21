@@ -1,0 +1,40 @@
+[Unit]
+Description=Koii AIOS Agent Service
+Documentation=https://koii.network
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+User=aios
+Group=aios
+WorkingDirectory=/opt/aios
+Environment="PATH=/opt/aios/.venv/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONUNBUFFERED=1"
+Environment="AIOS_DATA_DIR=/var/lib/aios/data"
+Environment="AIOS_LOG_DIR=/var/lib/aios/logs"
+
+# Start the Koii agent
+ExecStart=/opt/aios/.venv/bin/python3 -m src.koii_cli agent start
+
+# Restart policy
+Restart=on-failure
+RestartSec=10s
+StartLimitInterval=300
+StartLimitBurst=5
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/aios /opt/aios
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=aios-agent
+
+[Install]
+WantedBy=multi-user.target
