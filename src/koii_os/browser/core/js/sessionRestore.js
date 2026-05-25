@@ -80,12 +80,12 @@ const sessionRestore = {
     */
 
     try {
-      // first run, show the tour and LLM setup
+      // first run, show the welcome page and LLM setup
       if (!savedStringData) {
         tasks.setSelected(tasks.add()) // create a new task
 
         var newTab = tasks.getSelected().tabs.add({
-            url: 'https://koiiai.com'
+            url: 'min://app/pages/newtab/'
         })
         browserUI.addTab(newTab, {
          enterEditMode: false
