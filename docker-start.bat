@@ -100,9 +100,13 @@ REM Main menu
 cls
 echo.
 echo ========================================
-echo    Koii OS (AIOS) Docker Manager
+echo    Koii OS (AIOS) Control Center
 echo ========================================
 echo.
+echo === Browser ===
+echo 10) Start AI Min Browser (Native)
+echo.
+echo === Docker Services ===
 echo 1) Start AIOS (with Web UI)
 echo 2) Stop AIOS
 echo 3) Restart AIOS
@@ -112,11 +116,13 @@ echo 6) Clean up (remove containers and volumes)
 echo 7) Show status
 echo 8) Open Web UI
 echo 9) Enter container shell
+echo.
 echo 0) Exit
 echo.
 
 set /p choice="Select an option: "
 
+if "%choice%"=="10" goto browser
 if "%choice%"=="1" goto start
 if "%choice%"=="2" goto stop
 if "%choice%"=="3" goto restart
@@ -130,6 +136,27 @@ if "%choice%"=="0" goto end
 
 echo Invalid option. Please try again.
 pause
+goto menu
+
+:browser
+echo.
+set BROWSER_EXE=src\koii_os\browser\core\dist\Min 1.35.5.exe
+if not exist "%BROWSER_EXE%" (
+    echo [ERROR] Browser executable not found!
+    echo Expected location: %BROWSER_EXE%
+    echo.
+    echo Please build the browser first:
+    echo   cd src\koii_os\browser\core
+    echo   npm run build
+    echo   npx electron-builder --win portable --publish=never
+    echo.
+    pause
+    goto menu
+)
+echo [INFO] Launching AI Min Browser...
+start "" "%BROWSER_EXE%"
+echo [SUCCESS] Browser launched!
+timeout /t 2
 goto menu
 
 :start
