@@ -442,10 +442,21 @@ async def browser_screenshot() -> Any:
 
 
 # Serve static files (HTML/JS/CSS)
+@app.get("/")
+async def root() -> FileResponse:
+    """Serve the main index.html page."""
+    static_dir = Path(_runtime_context.get("static_dir", "static"))
+    index_path = static_dir / "index.html"
+    if index_path.exists():
+        return FileResponse(str(index_path))
+    return FileResponse("static/index.html")
+
+
 def setup_static_files(static_dir: Path) -> None:
+    """Mount static files directory."""
     if static_dir.exists():
+        _runtime_context["static_dir"] = str(static_dir)
         app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
-        app.mount("/", StaticFiles(directory=str(static_dir), html=True), name="root")
 
 
 def _plugin_root() -> Path:
