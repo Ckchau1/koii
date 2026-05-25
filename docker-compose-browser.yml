@@ -1,0 +1,122 @@
+# Docker Compose for AIOS with Electron Browser
+# Usage: docker-compose -f docker-compose-browser.yml up
+#
+# This configuration launches the AIOS Min browser with LLM integration
+# Supports X11 forwarding for display output
+
+version: '3.8'
+
+services:
+  aios-browser:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aios-browser
+    environment:
+      # X11 Display (required for browser)
+      # On Linux: Use your actual DISPLAY (usually :0)
+      # On Mac: Use X11 forwarding via docker-machine or similar
+      DISPLAY: ':99'
+      USE_XVFB: 'true'
+
+      # LLM Configuration
+      KOII_LLM_API_URL: 'https://api.anthropic.com/v1'
+      # KOII_LLM_API_KEY: 'sk-...'  # Set via docker run -e or compose override
+
+      # Optional: Start API server alongside browser
+      START_API_SERVER: 'false'
+
+      # Optional: Development mode
+      DEV_MODE: 'false'
+
+      # Python settings
+      PYTHONUNBUFFERED: '1'
+
+    volumes:
+      # Mount X11 socket for display (Linux only)
+      # - /tmp/.X11-unix:/tmp/.X11-unix
+
+      # Persistent data volumes
+      - aios-data:/app/data
+      - aios-config:/app/config
+      - aios-logs:/app/logs
+
+    ports:
+      # Optional: Expose API if START_API_SERVER is true
+      - "8000:8000"
+
+    # Device access for audio/video
+    devices:
+      - /dev/dri:/dev/dri
+
+    # Memory and CPU limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Logging
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+volumes:
+  aios-data:
+    driver: local
+  aios-config:
+    driver: local
+  aios-logs:
+    driver: local
+
+# ============================================================================
+# Usage Examples:
+# ============================================================================
+#
+# 1. Basic browser launch (Linux with X11):
+#    export DISPLAY=:0
+#    docker-compose -f docker-compose-browser.yml up
+#
+# 2. With LLM API key:
+#    docker-compose -f docker-compose-browser.yml up \
+#      -e KOII_LLM_API_KEY=sk-...
+#
+# 3. With both browser and API server:
+#    Modify this file: set START_API_SERVER: 'true'
+#    docker-compose -f docker-compose-browser.yml up
+#
+# 4. Run in background:
+#    docker-compose -f docker-compose-browser.yml up -d
+#
+# 5. View logs:
+#    docker-compose -f docker-compose-browser.yml logs -f
+#
+# 6. Stop:
+#    docker-compose -f docker-compose-browser.yml down
+#
+# ============================================================================
+# Mac Setup (alternative to docker-machine):
+# ============================================================================
+#
+# Install XQuartz: https://www.xquartz.org/
+# Then:
+#   1. Start XQuartz and allow connections from network clients
+#   2. In terminal: export DISPLAY=127.0.0.1:0
+#   3. Run docker-compose
+#
+# ============================================================================
+# Windows Setup (WSL2 + X11):
+# ============================================================================
+#
+# Install VcXsrv or Xming
+# Then set: DISPLAY=localhost:0
+#
+# ============================================================================

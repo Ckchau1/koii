@@ -79,6 +79,10 @@ COPY --from=builder /root/.cache/ms-playwright /home/koii/.cache/ms-playwright
 # Copy application code
 COPY --chown=koii:koii . .
 
+# Copy entrypoint script
+COPY --chown=koii:koii docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
+
 # Create necessary directories
 RUN mkdir -p /app/data /app/logs /app/config && \
     chown -R koii:koii /app
@@ -94,9 +98,29 @@ EXPOSE 8000 43210 4222
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import sys; sys.exit(0)"
+    CMD python -c "import sys; sys.exit(0)" || exit 1
 
-# Default command: Run the web UI
-CMD ["python", "-m", "uvicorn", "src.koii_os.api.server:app", "--host", "0.0.0.0", "--port", "8000"]
+# Set entrypoint
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
+
+# Environment variables documentation:
+# DISPLAY=:0 or :99 - Required for Electron browser (X11 forwarding)
+# KOII_LLM_API_URL - LLM API endpoint (default: https://api.anthropic.com/v1)
+# KOII_LLM_API_KEY - LLM API key
+# DEV_MODE=true - Run browser in development mode
+# START_API_SERVER=true - Also start FastAPI server alongside browser
+# USE_XVFB=true - Use Xvfb for virtual display
+#
+# Examples:
+# 1. Run with X11 forwarding (browser):
+#    docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix my-aios
+#
+# 2. Run web API only (default):
+#    docker run -p 8000:8000 my-aios
+#
+# 3. Run browser with LLM configured:
+#    docker run -e DISPLAY=:99 -e USE_XVFB=true \
+#      -e KOII_LLM_API_URL=https://api.anthropic.com/v1 \
+#      -e KOII_LLM_API_KEY=sk-... my-aios
 
 # Made with Bob

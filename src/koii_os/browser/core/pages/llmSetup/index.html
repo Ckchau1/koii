@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LLM Setup</title>
+  <link rel="stylesheet" href="setup.css">
+</head>
+<body>
+  <div class="llm-setup-container">
+    <div class="llm-setup-modal">
+      <div class="llm-setup-header">
+        <h1>Set Up Your LLM</h1>
+        <p>Configure your Large Language Model to unlock AI features in the browser</p>
+      </div>
+
+      <div class="llm-setup-content">
+        <!-- Welcome Step -->
+        <div class="setup-step active" id="step-welcome">
+          <div class="step-content">
+            <h2>Welcome to AIOS</h2>
+            <p>This browser can be enhanced with AI capabilities like:</p>
+            <ul class="feature-list">
+              <li>💬 <strong>Chat Assistant</strong> - Talk to AI while browsing</li>
+              <li>📊 <strong>Content Analysis</strong> - Auto-summarize pages</li>
+              <li>🤖 <strong>Autonomous Agent</strong> - Have AI complete tasks for you</li>
+            </ul>
+            <p class="setup-description">To enable these features, you'll need to provide your LLM API credentials.</p>
+          </div>
+
+          <div class="setup-actions">
+            <button class="btn btn-primary" onclick="setupWizard.goToStep('api-url')">
+              Continue
+            </button>
+            <button class="btn btn-secondary" onclick="setupWizard.skipSetup()">
+              Skip for now
+            </button>
+          </div>
+        </div>
+
+        <!-- API URL Step -->
+        <div class="setup-step" id="step-api-url">
+          <div class="step-content">
+            <h2>LLM API URL</h2>
+            <p>Enter the base URL of your LLM provider</p>
+            <form onsubmit="return false">
+              <div class="form-group">
+                <label for="apiUrl">API URL</label>
+                <input
+                  type="url"
+                  id="apiUrl"
+                  name="apiUrl"
+                  placeholder="e.g., https://api.anthropic.com/v1"
+                  value="https://api.anthropic.com/v1"
+                  required
+                />
+                <div class="form-hint">The base URL for your LLM API service</div>
+              </div>
+            </form>
+          </div>
+
+          <div class="setup-actions">
+            <button class="btn btn-primary" onclick="setupWizard.goToStep('api-key')">
+              Next
+            </button>
+            <button class="btn btn-secondary" onclick="setupWizard.goToStep('welcome')">
+              Back
+            </button>
+          </div>
+        </div>
+
+        <!-- API Key Step -->
+        <div class="setup-step" id="step-api-key">
+          <div class="step-content">
+            <h2>API Key</h2>
+            <p>Enter your LLM API key. It will be securely encrypted.</p>
+            <form onsubmit="return false">
+              <div class="form-group">
+                <label for="apiKey">API Key</label>
+                <input
+                  type="password"
+                  id="apiKey"
+                  name="apiKey"
+                  placeholder="sk-..."
+                  required
+                />
+                <div class="form-hint">Your API key is encrypted and stored locally</div>
+              </div>
+            </form>
+          </div>
+
+          <div class="setup-actions">
+            <button class="btn btn-primary" onclick="setupWizard.goToStep('model-selection')">
+              Next
+            </button>
+            <button class="btn btn-secondary" onclick="setupWizard.goToStep('api-url')">
+              Back
+            </button>
+          </div>
+        </div>
+
+        <!-- Model Selection Step -->
+        <div class="setup-step" id="step-model-selection">
+          <div class="step-content">
+            <h2>Select Model</h2>
+            <p>Choose the LLM model to use</p>
+            <form onsubmit="return false">
+              <div class="form-group">
+                <label for="modelId">Model</label>
+                <input
+                  type="text"
+                  id="modelId"
+                  name="modelId"
+                  placeholder="e.g., claude-opus-4-7"
+                  value="claude-opus-4-7"
+                  required
+                />
+                <div class="form-hint">The model identifier to use for API calls</div>
+              </div>
+
+              <div class="form-group">
+                <label for="maxTokens">Max Tokens</label>
+                <input
+                  type="number"
+                  id="maxTokens"
+                  name="maxTokens"
+                  value="4096"
+                  min="100"
+                  max="200000"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="temperature">Temperature</label>
+                <input
+                  type="number"
+                  id="temperature"
+                  name="temperature"
+                  value="0.7"
+                  min="0"
+                  max="2"
+                  step="0.1"
+                />
+                <div class="form-hint">0 = deterministic, 1 = balanced, 2 = creative</div>
+              </div>
+            </form>
+          </div>
+
+          <div class="setup-actions">
+            <button class="btn btn-primary" onclick="setupWizard.testAndContinue()">
+              Test Connection
+            </button>
+            <button class="btn btn-secondary" onclick="setupWizard.goToStep('api-key')">
+              Back
+            </button>
+          </div>
+        </div>
+
+        <!-- Features Step -->
+        <div class="setup-step" id="step-features">
+          <div class="step-content">
+            <h2>Enable Features</h2>
+            <p>Choose which AI features you'd like to enable</p>
+            <form onsubmit="return false">
+              <div class="form-group checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="enableChat" name="enableChat" checked />
+                  <span class="checkbox-text">
+                    <strong>💬 Chat Assistant</strong>
+                    <br><span class="checkbox-hint">Talk to AI via a sidebar panel while browsing</span>
+                  </span>
+                </label>
+              </div>
+
+              <div class="form-group checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="enableAnalysis" name="enableAnalysis" checked />
+                  <span class="checkbox-text">
+                    <strong>📊 Content Analysis</strong>
+                    <br><span class="checkbox-hint">Auto-summarize and analyze pages you visit</span>
+                  </span>
+                </label>
+              </div>
+
+              <div class="form-group checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="enableAgent" name="enableAgent" checked />
+                  <span class="checkbox-text">
+                    <strong>🤖 Autonomous Agent</strong>
+                    <br><span class="checkbox-hint">Ask AI to perform tasks like finding info or clicking buttons</span>
+                  </span>
+                </label>
+              </div>
+            </form>
+          </div>
+
+          <div class="setup-actions">
+            <button class="btn btn-primary" onclick="setupWizard.goToStep('confirmation')">
+              Next
+            </button>
+            <button class="btn btn-secondary" onclick="setupWizard.goToStep('model-selection')">
+              Back
+            </button>
+          </div>
+        </div>
+
+        <!-- Confirmation Step -->
+        <div class="setup-step" id="step-confirmation">
+          <div class="step-content">
+            <h2>Ready to go!</h2>
+            <p class="success-message">✓ All settings configured successfully</p>
+            <div class="config-summary">
+              <p><strong>API URL:</strong> <span id="summaryApiUrl"></span></p>
+              <p><strong>Model:</strong> <span id="summaryModel"></span></p>
+              <p><strong>Features:</strong> <span id="summaryFeatures"></span></p>
+            </div>
+          </div>
+
+          <div class="setup-actions">
+            <button class="btn btn-primary" onclick="setupWizard.finishSetup()">
+              Start Using AIOS
+            </button>
+            <button class="btn btn-secondary" onclick="setupWizard.goToStep('features')">
+              Back
+            </button>
+          </div>
+        </div>
+
+        <!-- Error Step -->
+        <div class="setup-step" id="step-error">
+          <div class="step-content error-content">
+            <h2>Connection Failed</h2>
+            <p id="errorMessage"></p>
+            <div class="error-details" id="errorDetails"></div>
+          </div>
+
+          <div class="setup-actions">
+            <button class="btn btn-primary" onclick="setupWizard.goToStep('model-selection')">
+              Try Again
+            </button>
+            <button class="btn btn-secondary" onclick="setupWizard.skipSetup()">
+              Skip
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Indicator -->
+      <div class="setup-progress">
+        <div class="progress-steps">
+          <div class="progress-step" data-step="welcome">Welcome</div>
+          <div class="progress-step" data-step="api-url">URL</div>
+          <div class="progress-step" data-step="api-key">Key</div>
+          <div class="progress-step" data-step="model-selection">Model</div>
+          <div class="progress-step" data-step="features">Features</div>
+          <div class="progress-step" data-step="confirmation">Confirm</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="setup.js"></script>
+</body>
+</html>
