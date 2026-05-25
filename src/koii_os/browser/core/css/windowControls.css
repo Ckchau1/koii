@@ -44,6 +44,13 @@ body.mac:not(.is-edit-mode):not(.fullscreen):not(.separate-titlebar) #mac-window
   -webkit-app-region: drag;
 }
 
+.windowDragHandle,
+.windowDragHandle button,
+.windowDragHandle input,
+.windowDragHandle svg {
+  -webkit-app-region: no-drag;
+}
+
 /* mac window buttons */
 
 body.mac:not(.fullscreen):not(.separate-titlebar) {

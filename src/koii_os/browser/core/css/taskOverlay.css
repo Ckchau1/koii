@@ -88,8 +88,7 @@
   padding-bottom: 1.5em;
 }
 #task-overlay[hidden] {
-  display: block !important;
-  transform: scale(1.05);
+  display: none !important;
   opacity: 0;
   pointer-events: none;
 }

@@ -27,6 +27,8 @@ button {
   border: none;
   color: inherit;
   outline: none;
+  cursor: pointer;
+  pointer-events: auto;
 }
 body,
 html {
