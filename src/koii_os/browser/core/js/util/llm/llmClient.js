@@ -210,6 +210,47 @@ var llmClient = {
     }
 
     return `\nCurrent browsing context:\n${parts.join('\n')}`
+  },
+
+  // Simple one-shot completion used by the Agent Mesh
+  complete: function (options) {
+    var cfg = null
+    try { cfg = require('util/llm/llmSettings').get() } catch (e) {}
+
+    if (!cfg || !cfg.hasApiKey) {
+      return Promise.resolve('')
+    }
+
+    var apiUrl = (cfg && cfg.apiUrl) || 'https://api.anthropic.com/v1'
+    var modelId = (cfg && cfg.modelId) || 'claude-opus-4-6'
+    var maxTok = (cfg && cfg.maxTokens) || 1024
+
+    var userText = ''
+    if (options.systemPrompt) userText += options.systemPrompt + '\n\n'
+    if (options.userPrompt) userText += options.userPrompt
+
+    return fetch(apiUrl + '/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': (cfg && cfg._apiKey) || '',
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: modelId,
+        max_tokens: maxTok,
+        messages: [{ role: 'user', content: userText }]
+      })
+    }).then(function (res) {
+      return res.json()
+    }).then(function (data) {
+      var blocks = data && data.content
+      if (blocks && blocks[0] && blocks[0].text) return blocks[0].text
+      return ''
+    }).catch(function (e) {
+      console.warn('[llmClient.complete] error:', e.message)
+      return ''
+    })
   }
 }
 

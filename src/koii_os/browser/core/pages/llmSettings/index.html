@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LLM &amp; Agent Settings — AIOS</title>
+  <link rel="stylesheet" href="../../css/base.css" />
+  <link rel="stylesheet" href="llmSettings.css" />
+</head>
+<body>
+
+  <div class="ls-hero">
+    <div class="ls-hero-inner">
+      <div class="ls-hero-icon">⬡</div>
+      <div>
+        <h1 class="ls-hero-title">LLM &amp; Agent Settings</h1>
+        <p class="ls-hero-sub">Configure your AI provider and control which agents are active</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="ls-container">
+
+    <!-- ── Provider section ─────────────────────────────────────── -->
+    <section class="ls-section">
+      <h2 class="ls-section-title">LLM Provider</h2>
+
+      <div class="ls-field">
+        <label class="ls-label" for="apiProvider">Provider</label>
+        <select id="apiProvider" class="ls-select ls-input">
+          <option value="anthropic">Anthropic (Claude)</option>
+          <option value="openai">OpenAI (GPT)</option>
+          <option value="openai_compat">OpenAI-Compatible / Local (Ollama, vLLM…)</option>
+          <option value="custom">Custom</option>
+        </select>
+        <p class="ls-hint">Selecting a provider pre-fills the API URL and model list.</p>
+      </div>
+
+      <div class="ls-field">
+        <label class="ls-label" for="apiUrl">API Base URL</label>
+        <input id="apiUrl" class="ls-input" type="url"
+          placeholder="https://api.anthropic.com/v1" autocomplete="off" spellcheck="false" />
+        <p class="ls-hint">The base URL of your LLM API endpoint.</p>
+      </div>
+
+      <div class="ls-field">
+        <label class="ls-label" for="apiKey">API Key</label>
+        <div class="ls-input-group">
+          <input id="apiKey" class="ls-input" type="password"
+            placeholder="sk-…" autocomplete="new-password" spellcheck="false" />
+          <button class="ls-toggle-key" id="toggleKeyBtn" title="Show/hide key">👁</button>
+        </div>
+        <p class="ls-hint">Encrypted at rest with Electron's safeStorage. Never logged or transmitted.</p>
+      </div>
+
+      <div class="ls-field">
+        <label class="ls-label" for="modelId">Model</label>
+        <div class="ls-input-group">
+          <input id="modelId" class="ls-input" type="text"
+            placeholder="claude-opus-4-6" autocomplete="off" spellcheck="false" />
+          <select id="modelPreset" class="ls-select ls-model-preset">
+            <option value="">— Presets —</option>
+          </select>
+        </div>
+        <p class="ls-hint">Model identifier. You can type any model name or choose a preset.</p>
+      </div>
+
+      <!-- Model presets rendered by JS per provider -->
+      <div id="modelPresetGrid" class="ls-model-grid"></div>
+
+    </section>
+
+    <!-- ── Advanced section ─────────────────────────────────────── -->
+    <section class="ls-section">
+      <h2 class="ls-section-title">Advanced</h2>
+
+      <div class="ls-field ls-field-row">
+        <div class="ls-field-col">
+          <label class="ls-label" for="maxTokens">Max Tokens</label>
+          <input id="maxTokens" class="ls-input" type="number" min="100" max="200000" step="100" value="4096" />
+        </div>
+        <div class="ls-field-col">
+          <label class="ls-label" for="temperature">Temperature</label>
+          <input id="temperature" class="ls-input" type="number" min="0" max="2" step="0.05" value="0.7" />
+        </div>
+        <div class="ls-field-col">
+          <label class="ls-label" for="timeout">Timeout (s)</label>
+          <input id="timeout" class="ls-input" type="number" min="5" max="300" step="5" value="60" />
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Connection test ──────────────────────────────────────── -->
+    <section class="ls-section">
+      <div class="ls-test-row">
+        <button id="testConnectionBtn" class="ls-btn ls-btn-secondary">
+          ⚡ Test Connection
+        </button>
+        <div id="testResult" class="ls-test-result" style="display:none"></div>
+      </div>
+    </section>
+
+    <!-- ── Agent toggles ────────────────────────────────────────── -->
+    <section class="ls-section">
+      <h2 class="ls-section-title">Agent Configuration</h2>
+      <p class="ls-section-desc">Enable or disable individual agents. Disabled agents are skipped during task execution.</p>
+
+      <div class="ls-agents">
+
+        <div class="ls-agent-row" data-agent="SemanticUnderstandingAgent">
+          <div class="ls-agent-icon">🧠</div>
+          <div class="ls-agent-info">
+            <div class="ls-agent-name">Semantic Understanding Agent</div>
+            <div class="ls-agent-desc">Deep intent parsing, proactive questioning, context maintenance. The brain of all agents — cannot be fully disabled.</div>
+          </div>
+          <label class="ls-toggle">
+            <input type="checkbox" id="toggle_semantic" checked disabled />
+            <span class="ls-toggle-track"></span>
+          </label>
+        </div>
+
+        <div class="ls-agent-row" data-agent="OrchestrationAgent">
+          <div class="ls-agent-icon">⬡</div>
+          <div class="ls-agent-info">
+            <div class="ls-agent-name">Orchestration Agent</div>
+            <div class="ls-agent-desc">Task allocation, parallel execution, conflict resolution, workflow management. Core of the Agent Mesh.</div>
+          </div>
+          <label class="ls-toggle">
+            <input type="checkbox" id="toggle_orchestration" checked />
+            <span class="ls-toggle-track"></span>
+          </label>
+        </div>
+
+        <div class="ls-agent-row" data-agent="TaskExecutionAgent">
+          <div class="ls-agent-icon">⚡</div>
+          <div class="ls-agent-info">
+            <div class="ls-agent-name">Task Execution Agent</div>
+            <div class="ls-agent-desc">Task breakdown, step execution, and result reporting. Most frequently invoked agent.</div>
+          </div>
+          <label class="ls-toggle">
+            <input type="checkbox" id="toggle_execution" checked />
+            <span class="ls-toggle-track"></span>
+          </label>
+        </div>
+
+        <div class="ls-agent-row" data-agent="AIBrowserAgent">
+          <div class="ls-agent-icon">🌐</div>
+          <div class="ls-agent-info">
+            <div class="ls-agent-name">AI Browser Agent</div>
+            <div class="ls-agent-desc">Browser navigation, webpage interaction, real-time summarization, and semantic search.</div>
+          </div>
+          <label class="ls-toggle">
+            <input type="checkbox" id="toggle_browser" checked />
+            <span class="ls-toggle-track"></span>
+          </label>
+        </div>
+
+        <div class="ls-agent-row" data-agent="SelfLearningAgent">
+          <div class="ls-agent-icon">📈</div>
+          <div class="ls-agent-info">
+            <div class="ls-agent-name">Self-Learning Agent</div>
+            <div class="ls-agent-desc">Learns from usage history, optimizes prompts, improves decision-making over time.</div>
+          </div>
+          <label class="ls-toggle">
+            <input type="checkbox" id="toggle_learning" checked />
+            <span class="ls-toggle-track"></span>
+          </label>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── Feature toggles ──────────────────────────────────────── -->
+    <section class="ls-section">
+      <h2 class="ls-section-title">Features</h2>
+
+      <div class="ls-feature-grid" id="featureGrid">
+        <label class="ls-feature-item">
+          <input type="checkbox" data-feature="chat" checked />
+          <span class="ls-feature-label">💬 Chat assistant</span>
+        </label>
+        <label class="ls-feature-item">
+          <input type="checkbox" data-feature="analysis" checked />
+          <span class="ls-feature-label">📊 Page analysis</span>
+        </label>
+        <label class="ls-feature-item">
+          <input type="checkbox" data-feature="autonomousAgent" checked />
+          <span class="ls-feature-label">🤖 Autonomous agent</span>
+        </label>
+        <label class="ls-feature-item">
+          <input type="checkbox" data-feature="autoSummarize" />
+          <span class="ls-feature-label">📝 Auto-summarize on load</span>
+        </label>
+        <label class="ls-feature-item">
+          <input type="checkbox" data-feature="semanticSearch" checked />
+          <span class="ls-feature-label">🔍 Semantic search overlay</span>
+        </label>
+        <label class="ls-feature-item">
+          <input type="checkbox" data-feature="selfLearning" checked />
+          <span class="ls-feature-label">📈 Self-learning &amp; analytics</span>
+        </label>
+      </div>
+    </section>
+
+    <!-- ── Actions ──────────────────────────────────────────────── -->
+    <div class="ls-actions">
+      <button id="saveBtn" class="ls-btn ls-btn-primary">Save Settings</button>
+      <button id="clearBtn" class="ls-btn ls-btn-danger">Clear &amp; Reset</button>
+    </div>
+
+    <div id="saveStatus" class="ls-save-status" style="display:none"></div>
+
+  </div><!-- /ls-container -->
+
+  <script src="llmSettings.js"></script>
+</body>
+</html>

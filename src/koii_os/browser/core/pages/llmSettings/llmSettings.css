@@ -1,0 +1,287 @@
+/* ── LLM Settings Page — AIOS ────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-size: 14px;
+  color: #222;
+  background: #f5f5f7;
+  line-height: 1.5;
+}
+
+/* Hero */
+.ls-hero {
+  background: linear-gradient(135deg, #5865f2 0%, #7c4dff 100%);
+  color: #fff;
+  padding: 28px 40px 24px;
+}
+.ls-hero-inner { display: flex; align-items: center; gap: 16px; max-width: 700px; }
+.ls-hero-icon { font-size: 40px; }
+.ls-hero-title { margin: 0 0 4px; font-size: 22px; font-weight: 700; }
+.ls-hero-sub { margin: 0; opacity: .85; font-size: 14px; }
+
+/* Container */
+.ls-container { max-width: 700px; margin: 0 auto; padding: 24px 20px 40px; }
+
+/* Sections */
+.ls-section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  border: 1px solid #e5e5ea;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+
+.ls-section-title {
+  margin: 0 0 14px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: #5865f2;
+}
+.ls-section-desc { margin: -8px 0 14px; font-size: 13px; color: #888; }
+
+/* Fields */
+.ls-field { margin-bottom: 16px; }
+.ls-field:last-child { margin-bottom: 0; }
+
+.ls-field-row { display: flex; gap: 12px; }
+.ls-field-col { flex: 1; min-width: 0; }
+
+.ls-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+.ls-hint { margin: 5px 0 0; font-size: 11px; color: #aaa; }
+
+/* Inputs */
+.ls-input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #222;
+  background: #fafafa;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+}
+.ls-input:focus {
+  border-color: #5865f2;
+  box-shadow: 0 0 0 3px rgba(88,101,242,.15);
+  background: #fff;
+}
+.ls-input::placeholder { color: #bbb; }
+
+.ls-select {
+  appearance: none;
+  padding-right: 28px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23999' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  cursor: pointer;
+}
+
+.ls-input-group {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+}
+.ls-input-group .ls-input { flex: 1; }
+
+.ls-toggle-key, .ls-model-preset {
+  flex-shrink: 0;
+}
+
+.ls-toggle-key {
+  padding: 0 10px;
+  background: #f0f0f2;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.15s;
+}
+.ls-toggle-key:hover { background: #e5e5ea; }
+
+.ls-model-preset {
+  width: 140px;
+  padding: 9px 28px 9px 10px;
+  font-size: 12px;
+}
+
+/* Model grid */
+.ls-model-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.ls-model-chip {
+  padding: 5px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  background: #fff;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.ls-model-chip:hover  { border-color: #5865f2; color: #5865f2; }
+.ls-model-chip.active { border-color: #5865f2; background: rgba(88,101,242,.1); color: #5865f2; font-weight: 600; }
+
+/* Connection test */
+.ls-test-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+.ls-test-result {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.ls-test-ok    { background: #f0fff4; border: 1px solid #2ea44f; color: #1a7f37; }
+.ls-test-error { background: #fff5f5; border: 1px solid #e74c3c; color: #c0392b; }
+.ls-test-loading { background: #f0f4ff; border: 1px solid #5865f2; color: #3a4db7; }
+
+/* Agent toggles */
+.ls-agents { display: flex; flex-direction: column; gap: 10px; }
+
+.ls-agent-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f8f8fa;
+  border-radius: 10px;
+  border: 1.5px solid transparent;
+  transition: border-color 0.15s;
+}
+.ls-agent-row:has(input:checked) { border-color: rgba(88,101,242,.3); }
+
+.ls-agent-icon { font-size: 22px; flex-shrink: 0; }
+.ls-agent-info { flex: 1; min-width: 0; }
+.ls-agent-name { font-weight: 600; font-size: 13px; }
+.ls-agent-desc { font-size: 11px; color: #888; margin-top: 2px; }
+
+/* Toggle switch */
+.ls-toggle {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 24px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.ls-toggle input { opacity: 0; width: 0; height: 0; }
+.ls-toggle-track {
+  position: absolute;
+  inset: 0;
+  background: #ccc;
+  border-radius: 12px;
+  transition: background 0.2s;
+}
+.ls-toggle-track::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  transition: transform 0.2s;
+}
+.ls-toggle input:checked + .ls-toggle-track { background: #5865f2; }
+.ls-toggle input:checked + .ls-toggle-track::after { transform: translateX(18px); }
+.ls-toggle input:disabled + .ls-toggle-track { opacity: 0.5; cursor: not-allowed; }
+
+/* Feature grid */
+.ls-feature-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.ls-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f8f8fa;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: all 0.15s;
+}
+.ls-feature-item:has(input:checked) {
+  border-color: rgba(88,101,242,.3);
+  background: rgba(88,101,242,.05);
+}
+.ls-feature-item input { cursor: pointer; accent-color: #5865f2; }
+.ls-feature-label { font-size: 12px; font-weight: 500; }
+
+/* Buttons */
+.ls-btn {
+  padding: 10px 22px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  font-family: inherit;
+}
+.ls-btn:active { transform: scale(0.97); }
+
+.ls-btn-primary {
+  background: linear-gradient(135deg, #5865f2, #7c4dff);
+  color: #fff;
+}
+.ls-btn-primary:hover { opacity: 0.9; }
+
+.ls-btn-secondary {
+  background: #f0f0f2;
+  color: #444;
+  border: 1.5px solid #ddd;
+}
+.ls-btn-secondary:hover { background: #e5e5ea; }
+
+.ls-btn-danger {
+  background: #fff;
+  color: #e74c3c;
+  border: 1.5px solid #e74c3c;
+}
+.ls-btn-danger:hover { background: #fff5f5; }
+
+/* Actions bar */
+.ls-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+/* Save status */
+.ls-save-status {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+}
+.ls-save-ok    { background: #f0fff4; border: 1px solid #2ea44f; color: #1a7f37; }
+.ls-save-error { background: #fff5f5; border: 1px solid #e74c3c; color: #c0392b; }

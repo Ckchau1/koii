@@ -6,11 +6,20 @@ var llmConfigManager = {
   userDataPath: null,
   configFilePath: null,
   defaults: {
+    provider: 'anthropic',
     apiUrl: 'https://api.anthropic.com/v1',
-    modelId: 'claude-opus-4-7',
+    modelId: 'claude-opus-4-6',
     maxTokens: 4096,
     temperature: 0.7,
-    enabledFeatures: ['chat', 'analysis', 'autonomousAgent']
+    timeout: 60,
+    enabledFeatures: ['chat', 'analysis', 'autonomousAgent', 'semanticSearch', 'selfLearning'],
+    agents: {
+      SemanticUnderstandingAgent: true,
+      OrchestrationAgent: true,
+      TaskExecutionAgent: true,
+      AIBrowserAgent: true,
+      SelfLearningAgent: true
+    }
   },
 
   initialize: function (userDataPath) {
@@ -52,11 +61,14 @@ var llmConfigManager = {
     }
 
     return {
+      provider: config.provider || this.defaults.provider,
       apiUrl: config.apiUrl || this.defaults.apiUrl,
       modelId: config.modelId || this.defaults.modelId,
       maxTokens: config.maxTokens || this.defaults.maxTokens,
-      temperature: config.temperature || this.defaults.temperature,
+      temperature: config.temperature !== undefined ? config.temperature : this.defaults.temperature,
+      timeout: config.timeout || this.defaults.timeout,
       enabledFeatures: config.enabledFeatures || [...this.defaults.enabledFeatures],
+      agents: Object.assign({}, this.defaults.agents, config.agents || {}),
       hasApiKey: !!config.encryptedApiKey
     }
   },
@@ -87,11 +99,14 @@ var llmConfigManager = {
     }
 
     const configToSave = {
+      provider: config.provider || this.defaults.provider,
       apiUrl: config.apiUrl,
       modelId: config.modelId || this.defaults.modelId,
       maxTokens: config.maxTokens || this.defaults.maxTokens,
-      temperature: config.temperature || this.defaults.temperature,
-      enabledFeatures: config.enabledFeatures || [...this.defaults.enabledFeatures]
+      temperature: config.temperature !== undefined ? config.temperature : this.defaults.temperature,
+      timeout: config.timeout || this.defaults.timeout,
+      enabledFeatures: config.enabledFeatures || [...this.defaults.enabledFeatures],
+      agents: Object.assign({}, this.defaults.agents, config.agents || {})
     }
 
     // Encrypt API key if provided

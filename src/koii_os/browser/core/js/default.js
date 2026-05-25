@@ -172,6 +172,9 @@ require('bookmarkConverter.js').initialize()
 require('newTabPage.js').initialize()
 require('macHandoff.js').initialize()
 
+// Agent Mesh panel — initialized last so any failure never blocks session restore
+try { require('navbar/agentPanel.js').initialize() } catch (e) { console.error('[AgentPanel] init error:', e) }
+
 // default searchbar plugins
 
 require('searchbar/placesPlugin.js').initialize()
