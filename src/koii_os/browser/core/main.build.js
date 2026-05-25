@@ -1696,51 +1696,6 @@ ipc.handle('clearLLMConfig', function(e) {
   }
 })
 
-ipc.handle('chatWithLLM', async function(e, params) {
-  var config = llmConfigManager.getConfig()
-  var apiKey = llmConfigManager.getApiKey()
-
-  if (!apiKey) {
-    return { success: false, error: 'LLM API key not configured. Please set your API key in Settings.' }
-  }
-
-  var messages = params.messages || []
-  var systemPrompt = params.systemPrompt || 'You are a helpful AI assistant integrated into a web browser. Help the user with their browsing tasks.'
-
-  if (params.contextPrompt) {
-    systemPrompt += params.contextPrompt
-  }
-
-  try {
-    var response = await fetch(config.apiUrl + '/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: config.modelId,
-        max_tokens: config.maxTokens || 4096,
-        system: systemPrompt,
-        messages: messages.map(function(m) { return { role: m.role, content: m.content } })
-      })
-    })
-
-    if (!response.ok) {
-      var errData = await response.json()
-      return { success: false, error: errData.error && errData.error.message ? errData.error.message : 'API error ' + response.status }
-    }
-
-    var data = await response.json()
-    var content = data.content && data.content[0] ? data.content[0].text : ''
-    return { success: true, content: content }
-  } catch (err) {
-    console.error('LLM API call failed:', err)
-    return { success: false, error: err.message }
-  }
-})
-
 ipc.on('quit', function () {
   app.quit()
 })

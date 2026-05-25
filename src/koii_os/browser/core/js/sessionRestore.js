@@ -319,6 +319,11 @@ const sessionRestore = {
     ipc.on('read-tab-state', function (e) {
       ipc.send('return-tab-state', tasks.getCopyableState())
     })
+
+    // Show LLM setup modal on first run
+    setTimeout(function() {
+      sessionRestore.showLLMSetupModal()
+    }, 1000)
   }
 }
 
