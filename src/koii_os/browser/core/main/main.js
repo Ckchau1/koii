@@ -156,35 +156,23 @@ function handleCommandLineArguments (argv) {
 }
 
 function createWindow (customArgs = {}) {
-  var bounds;
+  var size = electron.screen.getPrimaryDisplay().workAreaSize
+  var bounds = {
+    x: 0,
+    y: 0,
+    width: size.width,
+    height: size.height,
+    maximized: true
+  }
 
   try {
     var data = fs.readFileSync(path.join(userDataPath, 'windowBounds.json'), 'utf-8')
-    bounds = JSON.parse(data)
+    var saved = JSON.parse(data)
+    // only use saved bounds if they are a reasonable size
+    if (saved && saved.width >= 800 && saved.height >= 600) {
+      bounds = saved
+    }
   } catch (e) {}
-
-  if (!bounds) { // there was an error, probably because the file doesn't exist
-    var size = electron.screen.getPrimaryDisplay().workAreaSize
-    bounds = {
-      x: 0,
-      y: 0,
-      width: size.width,
-      height: size.height,
-      maximized: true
-    }
-  }
-
-  // ensure the window is never too small to be usable
-  if (bounds.width < 800 || bounds.height < 600) {
-    var size = electron.screen.getPrimaryDisplay().workAreaSize
-    bounds = {
-      x: 0,
-      y: 0,
-      width: size.width,
-      height: size.height,
-      maximized: true
-    }
-  }
 
   // make the bounds fit inside a currently-active screen
   // (since the screen Min was previously open on could have been removed)
@@ -243,24 +231,32 @@ function createWindowWithBounds (bounds, customArgs) {
   })
   mainView.webContents.loadURL(browserPage)
 
+  newWin.contentView.addChildView(mainView)
+
   if (bounds.maximized) {
     newWin.maximize()
 
+    // wait for maximize to complete before setting webview bounds
+    newWin.once('maximize', function () {
+      var wb = newWin.getContentBounds()
+      mainView.setBounds({x: 0, y: 0, width: wb.width, height: wb.height})
+    })
+
     mainView.webContents.once('did-finish-load', function () {
+      var wb = newWin.getContentBounds()
+      mainView.setBounds({x: 0, y: 0, width: wb.width, height: wb.height})
       sendIPCToWindow(newWin, 'maximize')
     })
-  }
-
-  const winBounds = newWin.getContentBounds()
-
-  mainView.setBounds({x: 0, y: 0, width: winBounds.width, height: winBounds.height})
-  newWin.contentView.addChildView(mainView)
-
-  // sometimes getContentBounds doesn't provide correct bounds until after the window has finished loading
-  mainView.webContents.once('did-finish-load', function () {
-    const winBounds = newWin.getContentBounds()
+  } else {
+    var winBounds = newWin.getContentBounds()
     mainView.setBounds({x: 0, y: 0, width: winBounds.width, height: winBounds.height})
-  })
+
+    // sometimes getContentBounds doesn't provide correct bounds until after the window has finished loading
+    mainView.webContents.once('did-finish-load', function () {
+      var wb = newWin.getContentBounds()
+      mainView.setBounds({x: 0, y: 0, width: wb.width, height: wb.height})
+    })
+  }
 
   mainView.webContents.ipc.on('set-window-title', function(e, title) {
     newWin.title = title
@@ -505,6 +501,51 @@ ipc.handle('clearLLMConfig', function(e) {
     return { success: true }
   } catch (err) {
     console.error('Error clearing LLM config:', err)
+    return { success: false, error: err.message }
+  }
+})
+
+ipc.handle('chatWithLLM', async function(e, params) {
+  var config = llmConfigManager.getConfig()
+  var apiKey = llmConfigManager.getApiKey()
+
+  if (!apiKey) {
+    return { success: false, error: 'LLM API key not configured. Please set your API key in Settings.' }
+  }
+
+  var messages = params.messages || []
+  var systemPrompt = params.systemPrompt || 'You are a helpful AI assistant integrated into a web browser. Help the user with their browsing tasks.'
+
+  if (params.contextPrompt) {
+    systemPrompt += params.contextPrompt
+  }
+
+  try {
+    var response = await fetch(config.apiUrl + '/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: config.modelId,
+        max_tokens: config.maxTokens || 4096,
+        system: systemPrompt,
+        messages: messages.map(function(m) { return { role: m.role, content: m.content } })
+      })
+    })
+
+    if (!response.ok) {
+      var errData = await response.json()
+      return { success: false, error: errData.error && errData.error.message ? errData.error.message : 'API error ' + response.status }
+    }
+
+    var data = await response.json()
+    var content = data.content && data.content[0] ? data.content[0].text : ''
+    return { success: true, content: content }
+  } catch (err) {
+    console.error('LLM API call failed:', err)
     return { success: false, error: err.message }
   }
 })

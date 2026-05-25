@@ -1,5 +1,4 @@
 // LLM Chat Panel - Slide-out chat sidebar for interacting with LLM
-var llmClient = require('util/llm/llmClient.js')
 var llmSettings = require('util/llm/llmSettings.js')
 var database = require('util/database.js')
 
@@ -13,26 +12,13 @@ var llmChatPanel = {
     if (this.isInitialized) return
     this.isInitialized = true
 
-    // Only initialize if chat is enabled
-    if (!llmSettings.isChatEnabled()) {
-      return
-    }
-
-    // Load configuration
-    const config = llmSettings.get()
-    if (!config || !config.hasApiKey) {
-      return
-    }
-
-    // Initialize database for storing chats
-    this.initializeDatabase()
-
-    // Create UI elements
+    // Always create the chat button and panel - show setup prompt if no API key
     this.createChatButton()
     this.createChatPanel()
-
-    // Setup event listeners
     this.setupEventListeners()
+
+    // Initialize database (best effort)
+    this.initializeDatabase()
   },
 
   initializeDatabase: function() {
@@ -44,27 +30,28 @@ var llmChatPanel = {
   },
 
   createChatButton: function() {
-    // Create toggle button in navbar
-    const navbar = document.querySelector('.navbar')
-    if (!navbar) return
-
-    const chatButton = document.createElement('div')
+    const chatButton = document.createElement('button')
     chatButton.id = 'llmChatButton'
-    chatButton.className = 'llm-chat-button'
+    chatButton.className = 'navbar-action-button'
     chatButton.title = 'Chat with AI'
-    chatButton.innerHTML = '💬'
+    chatButton.setAttribute('tabindex', '-1')
+    chatButton.innerHTML = '<span style="font-size:16px">&#x1F4AC;</span>'
 
-    chatButton.addEventListener('click', (e) => {
+    chatButton.addEventListener('click', function(e) {
       e.stopPropagation()
-      this.togglePanel()
+      llmChatPanel.togglePanel()
     })
 
-    // Insert before menu button
-    const menuButton = navbar.querySelector('[aria-label="Menu"]')
-    if (menuButton) {
-      menuButton.parentNode.insertBefore(chatButton, menuButton)
+    // Insert into right-actions area before the add-tab button
+    var rightActions = document.querySelector('.navbar-right-actions')
+    var addTabButton = document.getElementById('add-tab-button')
+    if (rightActions && addTabButton) {
+      rightActions.insertBefore(chatButton, addTabButton)
+    } else if (rightActions) {
+      rightActions.appendChild(chatButton)
     } else {
-      navbar.appendChild(chatButton)
+      var navbar = document.getElementById('navbar')
+      if (navbar) navbar.appendChild(chatButton)
     }
   },
 
@@ -85,13 +72,6 @@ var llmChatPanel = {
       <div class="chat-messages" id="chatMessages"></div>
 
       <div class="chat-input-area">
-        <div class="chat-context-option">
-          <label>
-            <input type="checkbox" id="includePageContext" checked />
-            <span>Include page context</span>
-          </label>
-        </div>
-
         <div class="chat-input-wrapper">
           <textarea
             id="chatInput"
@@ -135,11 +115,10 @@ var llmChatPanel = {
   },
 
   setupEventListeners: function() {
+    var self = this
     // Listen for LLM config changes
-    llmSettings.listen('hasApiKey', (hasKey) => {
-      if (!hasKey) {
-        this.closePanel()
-      }
+    llmSettings.listen('hasApiKey', function(hasKey) {
+      // keep panel open even without key so user can see the setup message
     })
 
     // Load chat history on init
@@ -186,82 +165,33 @@ var llmChatPanel = {
     this.isLoading = true
     this.setStatus('Thinking...')
 
-    // Build context if enabled
-    let contextPrompt = null
-    if (document.getElementById('includePageContext')?.checked) {
-      contextPrompt = llmClient.getPageContextPrompt()
-    }
-
-    // Get LLM config and key
-    const config = llmSettings.get()
-    const electron = window.electron
+    var self = this
+    var electron = window.electron
     if (!electron || !electron.ipcRenderer) {
-      this.setStatus('Error: Cannot connect to LLM')
+      this.addSystemMessage('Error: Cannot connect to LLM service.')
       this.isLoading = false
+      this.setStatus('')
       return
     }
 
-    // Get the API key from main process
-    electron.ipcRenderer.invoke('getLLMConfig').then(currentConfig => {
-      // Get the actual API key (encrypted in main process)
-      // For now, we'll need to implement a separate handler for this
-      // or store it in a secure way
-
-      // Use the llmClient to send message
-      const callbacks = {
-        onChunk: (text) => {
-          // Update the last message as it streams
-          if (this.currentMessages.length > 0) {
-            const lastMsg = this.currentMessages[this.currentMessages.length - 1]
-            if (lastMsg.role === 'assistant') {
-              lastMsg.content += text
-              this.renderMessages()
-              this.scrollToBottom()
-            }
-          }
-        },
-        onComplete: (message) => {
-          this.currentMessages.push(message)
-          this.renderMessages()
-          this.scrollToBottom()
-          this.isLoading = false
-          this.setStatus('')
-          this.saveChatHistory()
-        },
-        onError: (error) => {
-          this.addSystemMessage('Error: ' + error.message)
-          this.isLoading = false
-          this.setStatus('')
-        }
+    electron.ipcRenderer.invoke('chatWithLLM', {
+      messages: self.currentMessages
+    }).then(function(result) {
+      if (!result.success) {
+        self.addSystemMessage(result.error || 'LLM request failed.')
+      } else {
+        self.currentMessages.push({ role: 'assistant', content: result.content })
+        self.renderMessages()
+        self.scrollToBottom()
+        self.saveChatHistory()
       }
-
-      // Note: We need to implement a way to securely get the API key
-      // For now, we'll skip the actual LLM call and show a placeholder
-      this.showPlaceholderResponse(contextPrompt)
+      self.isLoading = false
+      self.setStatus('')
+    }).catch(function(err) {
+      self.addSystemMessage('Error: ' + err.message)
+      self.isLoading = false
+      self.setStatus('')
     })
-  },
-
-  showPlaceholderResponse: function(contextPrompt) {
-    // Placeholder response while we implement proper API key handling
-    setTimeout(() => {
-      const responses = [
-        'I can see you\'re working on a web page. What would you like to know about it?',
-        'Based on the current page, I\'m ready to help. What can I assist you with?',
-        'I notice you\'re browsing. Feel free to ask me anything about the page content.',
-      ]
-
-      const response = responses[Math.floor(Math.random() * responses.length)]
-      this.currentMessages.push({
-        role: 'assistant',
-        content: response
-      })
-
-      this.renderMessages()
-      this.scrollToBottom()
-      this.isLoading = false
-      this.setStatus('')
-      this.saveChatHistory()
-    }, 800)
   },
 
   renderMessages: function() {

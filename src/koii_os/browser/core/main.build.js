@@ -1347,35 +1347,23 @@ function handleCommandLineArguments (argv) {
 }
 
 function createWindow (customArgs = {}) {
-  var bounds;
+  var size = electron.screen.getPrimaryDisplay().workAreaSize
+  var bounds = {
+    x: 0,
+    y: 0,
+    width: size.width,
+    height: size.height,
+    maximized: true
+  }
 
   try {
     var data = fs.readFileSync(path.join(userDataPath, 'windowBounds.json'), 'utf-8')
-    bounds = JSON.parse(data)
+    var saved = JSON.parse(data)
+    // only use saved bounds if they are a reasonable size
+    if (saved && saved.width >= 800 && saved.height >= 600) {
+      bounds = saved
+    }
   } catch (e) {}
-
-  if (!bounds) { // there was an error, probably because the file doesn't exist
-    var size = electron.screen.getPrimaryDisplay().workAreaSize
-    bounds = {
-      x: 0,
-      y: 0,
-      width: size.width,
-      height: size.height,
-      maximized: true
-    }
-  }
-
-  // ensure the window is never too small to be usable
-  if (bounds.width < 800 || bounds.height < 600) {
-    var size = electron.screen.getPrimaryDisplay().workAreaSize
-    bounds = {
-      x: 0,
-      y: 0,
-      width: size.width,
-      height: size.height,
-      maximized: true
-    }
-  }
 
   // make the bounds fit inside a currently-active screen
   // (since the screen Min was previously open on could have been removed)
@@ -1434,24 +1422,32 @@ function createWindowWithBounds (bounds, customArgs) {
   })
   mainView.webContents.loadURL(browserPage)
 
+  newWin.contentView.addChildView(mainView)
+
   if (bounds.maximized) {
     newWin.maximize()
 
+    // wait for maximize to complete before setting webview bounds
+    newWin.once('maximize', function () {
+      var wb = newWin.getContentBounds()
+      mainView.setBounds({x: 0, y: 0, width: wb.width, height: wb.height})
+    })
+
     mainView.webContents.once('did-finish-load', function () {
+      var wb = newWin.getContentBounds()
+      mainView.setBounds({x: 0, y: 0, width: wb.width, height: wb.height})
       sendIPCToWindow(newWin, 'maximize')
     })
-  }
-
-  var winBounds = newWin.getContentBounds()
-
-  mainView.setBounds({x: 0, y: 0, width: winBounds.width, height: winBounds.height})
-  newWin.contentView.addChildView(mainView)
-
-  // sometimes getContentBounds doesn't provide correct bounds until after the window has finished loading
-  mainView.webContents.once('did-finish-load', function () {
+  } else {
     var winBounds = newWin.getContentBounds()
     mainView.setBounds({x: 0, y: 0, width: winBounds.width, height: winBounds.height})
-  })
+
+    // sometimes getContentBounds doesn't provide correct bounds until after the window has finished loading
+    mainView.webContents.once('did-finish-load', function () {
+      var wb = newWin.getContentBounds()
+      mainView.setBounds({x: 0, y: 0, width: wb.width, height: wb.height})
+    })
+  }
 
   mainView.webContents.ipc.on('set-window-title', function(e, title) {
     newWin.title = title
