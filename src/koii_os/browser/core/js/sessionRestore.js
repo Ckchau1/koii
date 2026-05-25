@@ -91,11 +91,6 @@ const sessionRestore = {
          enterEditMode: false
         })
 
-        // Show LLM setup modal on first run
-        setTimeout(function() {
-          sessionRestore.showLLMSetupModal()
-        }, 500)
-
         return
       }
 
@@ -235,43 +230,74 @@ const sessionRestore = {
     }
   },
   showLLMSetupModal: function () {
-    // Skip if user has already completed setup or skipped it
-    if (localStorage.getItem('llmSetupComplete') || localStorage.getItem('llmSetupSkipped')) {
+    // Skip if already configured
+    if (localStorage.getItem('llmSetupComplete')) {
       return
     }
 
-    // Create a modal overlay for LLM setup
+    // Check actual LLM config state from main process
+    if (!ipc || !ipc.invoke) {
+      console.warn('IPC not available for LLM config check')
+      sessionRestore._createSetupModal()
+      return
+    }
+
+    try {
+      ipc.invoke('getLLMConfig').then(function (config) {
+        if (config && config.hasApiKey) {
+          // LLM is configured — mark complete and don't show
+          localStorage.setItem('llmSetupComplete', 'true')
+          return
+        }
+        // Not configured — show setup modal
+        sessionRestore._createSetupModal()
+      }).catch(function (err) {
+        // If IPC fails, still show the modal
+        console.warn('LLM config check failed:', err)
+        sessionRestore._createSetupModal()
+      })
+    } catch (err) {
+      console.error('Error checking LLM config:', err)
+      sessionRestore._createSetupModal()
+    }
+  },
+
+  _createSetupModal: function () {
+    // Don't create duplicate modals
+    if (document.getElementById('llmSetupModal')) return
+
     var modal = document.createElement('div')
     modal.id = 'llmSetupModal'
-    modal.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
-    `
+    modal.style.cssText = [
+      'position:fixed',
+      'top:0',
+      'left:0',
+      'right:0',
+      'bottom:0',
+      'background:rgba(0,0,0,0.6)',
+      'display:flex',
+      'align-items:center',
+      'justify-content:center',
+      'z-index:10000'
+    ].join(';')
 
     var iframe = document.createElement('iframe')
     iframe.src = 'min://app/pages/llmSetup/index.html'
-    iframe.style.cssText = `
-      width: 600px;
-      height: 90vh;
-      max-width: 90vw;
-      border: none;
-      border-radius: 12px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    `
+    iframe.style.cssText = [
+      'width:580px',
+      'height:88vh',
+      'max-width:92vw',
+      'max-height:700px',
+      'border:none',
+      'border-radius:16px',
+      'box-shadow:0 24px 64px rgba(0,0,0,0.4)'
+    ].join(';')
 
     modal.appendChild(iframe)
     document.body.appendChild(modal)
 
     // Listen for close message from iframe
-    window.addEventListener('message', function handleClose(e) {
+    window.addEventListener('message', function handleClose (e) {
       if (e.data && e.data.type === 'closeModal' && e.data.name === 'llmSetup') {
         modal.remove()
         window.removeEventListener('message', handleClose)

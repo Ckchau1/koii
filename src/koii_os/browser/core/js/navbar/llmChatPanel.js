@@ -30,25 +30,27 @@ var llmChatPanel = {
   },
 
   createChatButton: function() {
-    const chatButton = document.createElement('button')
+    var self = this
+    var chatButton = document.createElement('button')
     chatButton.id = 'llmChatButton'
     chatButton.className = 'navbar-action-button'
     chatButton.title = 'Chat with AI'
     chatButton.setAttribute('tabindex', '-1')
     chatButton.innerHTML = '<span style="font-size:16px">&#x1F4AC;</span>'
 
-    chatButton.addEventListener('click', function(e) {
-      e.stopPropagation()
-      llmChatPanel.togglePanel()
-    })
+    chatButton.onclick = function() {
+      self.togglePanel()
+      return false
+    }
 
     // Insert AFTER add-tab button (between + and ≡ menu button)
     var addTabButton = document.getElementById('add-tab-button')
     if (addTabButton && addTabButton.parentNode) {
-      addTabButton.parentNode.insertBefore(chatButton, addTabButton.nextSibling)
-    } else {
-      var navbar = document.getElementById('navbar')
-      if (navbar) navbar.appendChild(chatButton)
+      if (addTabButton.nextSibling) {
+        addTabButton.parentNode.insertBefore(chatButton, addTabButton.nextSibling)
+      } else {
+        addTabButton.parentNode.appendChild(chatButton)
+      }
     }
   },
 
