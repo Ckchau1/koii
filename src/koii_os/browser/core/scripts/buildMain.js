@@ -31,10 +31,13 @@ function buildMain () {
   // build localization support first, since it is included in the bundle
   require('./buildLocalization.js')()
 
-  /* concatenate modules */
+  /* concatenate modules, converting const/let to var to avoid duplicate declaration errors in shared scope */
   let output = ''
   modules.forEach(function (script) {
-    output += fs.readFileSync(path.resolve(__dirname, '../', script)) + ';\n'
+    let content = fs.readFileSync(path.resolve(__dirname, '../', script), 'utf-8')
+    content = content.replace(/\bconst\b /g, 'var ')
+    content = content.replace(/\blet\b /g, 'var ')
+    output += content + ';\n'
   })
 
   fs.writeFileSync(outFile, output, 'utf-8')

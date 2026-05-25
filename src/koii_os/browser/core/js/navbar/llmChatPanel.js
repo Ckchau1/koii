@@ -1,7 +1,7 @@
 // LLM Chat Panel - Slide-out chat sidebar for interacting with LLM
-const llmClient = require('util/llm/llmClient.js')
-const llmSettings = require('util/llm/llmSettings.js')
-const database = require('util/database.js')
+var llmClient = require('util/llm/llmClient.js')
+var llmSettings = require('util/llm/llmSettings.js')
+var database = require('util/database.js')
 
 var llmChatPanel = {
   isInitialized: false,

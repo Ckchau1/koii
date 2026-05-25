@@ -84,3 +84,4 @@ desktop.ini
 .coverage.*
 htmlcov/
 .pytest_cache/
+/src/koii_os/browser/core/node_modules

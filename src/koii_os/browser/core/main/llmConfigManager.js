@@ -1,6 +1,6 @@
-const fs = require('fs')
-const path = require('path')
-const { safeStorage } = require('electron')
+var fs = require('fs')
+var path = require('path')
+var safeStorage = require('electron').safeStorage
 
 var llmConfigManager = {
   userDataPath: null,

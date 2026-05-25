@@ -1,5 +1,5 @@
 // Preload script bridge for LLM settings communication between renderer and main process
-const { ipcRenderer } = require('electron')
+var ipcRenderer = require('electron').ipcRenderer
 
 // This module is injected in the preload script
 // It provides a secure bridge between the renderer process and main process for LLM configuration

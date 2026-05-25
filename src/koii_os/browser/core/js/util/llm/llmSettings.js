@@ -22,7 +22,7 @@ var llmSettings = {
   },
 
   loadConfig: function (callback) {
-    const electron = window.electron
+    var electron = window.electron
     if (electron && electron.ipcRenderer) {
       electron.ipcRenderer.invoke('getLLMConfig').then(config => {
         this.config = config
@@ -63,7 +63,7 @@ var llmSettings = {
   },
 
   save: function (config, callback) {
-    const electron = window.electron
+    var electron = window.electron
     if (!electron || !electron.ipcRenderer) {
       if (callback) callback(new Error('Electron IPC not available'), null)
       return
@@ -84,7 +84,7 @@ var llmSettings = {
   },
 
   validateConnection: function (apiUrl, apiKey, modelId, callback) {
-    const electron = window.electron
+    var electron = window.electron
     if (!electron || !electron.ipcRenderer) {
       if (callback) callback(new Error('Electron IPC not available'), null)
       return

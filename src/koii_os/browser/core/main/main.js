@@ -1,8 +1,8 @@
-const electron = require('electron')
-const fs = require('fs')
-const path = require('path')
+var electron = require('electron')
+var fs = require('fs')
+var path = require('path')
 
-const {
+var {
   app, // Module to control application life.
   protocol, // Module to control protocol handling
   BaseWindow, // Module to create native browser window.
@@ -164,6 +164,18 @@ function createWindow (customArgs = {}) {
   } catch (e) {}
 
   if (!bounds) { // there was an error, probably because the file doesn't exist
+    var size = electron.screen.getPrimaryDisplay().workAreaSize
+    bounds = {
+      x: 0,
+      y: 0,
+      width: size.width,
+      height: size.height,
+      maximized: true
+    }
+  }
+
+  // ensure the window is never too small to be usable
+  if (bounds.width < 800 || bounds.height < 600) {
     var size = electron.screen.getPrimaryDisplay().workAreaSize
     bounds = {
       x: 0,

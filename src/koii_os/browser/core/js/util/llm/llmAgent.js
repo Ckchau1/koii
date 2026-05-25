@@ -1,8 +1,8 @@
 // LLM Autonomous Browser Agent
 // Executes tasks by receiving instructions from LLM and performing browser actions
 
-const llmSettings = require('util/llm/llmSettings.js')
-const database = require('util/database.js')
+var llmSettings = require('util/llm/llmSettings.js')
+var database = require('util/database.js')
 
 var llmAgent = {
   isRunning: false,
