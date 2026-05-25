@@ -105,6 +105,7 @@ echo ========================================
 echo.
 echo === Browser ===
 echo 10) Start AI Min Browser (Native)
+echo 11) Build AI Min Browser (.exe)
 echo.
 echo === Docker Services ===
 echo 1) Start AIOS (with Web UI)
@@ -123,6 +124,7 @@ echo.
 set /p choice="Select an option: "
 
 if "%choice%"=="10" goto browser
+if "%choice%"=="11" goto build_browser
 if "%choice%"=="1" goto start
 if "%choice%"=="2" goto stop
 if "%choice%"=="3" goto restart
@@ -138,9 +140,40 @@ echo Invalid option. Please try again.
 pause
 goto menu
 
+:build_browser
+echo.
+echo [INFO] Building AI Min Browser...
+echo This may take 3-5 minutes. Please wait.
+echo.
+cd src\koii_os\browser\core
+where node >nul 2>nul
+if %errorlevel% neq 0 (
+    echo [ERROR] Node.js is not installed! Please install from https://nodejs.org
+    cd ..\..\..\..
+    pause
+    goto menu
+)
+if not exist "node_modules" (
+    echo [INFO] Installing dependencies...
+    npm install
+)
+echo [INFO] Building browser bundles...
+npm run build
+echo [INFO] Packaging .exe (this takes a while)...
+npx electron-builder --win portable --publish=never
+cd ..\..\..\..
+echo.
+if exist "src\koii_os\browser\core\dist\app\Min 1.35.5.exe" (
+    echo [SUCCESS] Browser built: src\koii_os\browser\core\dist\app\Min 1.35.5.exe
+) else (
+    echo [ERROR] Build failed. Check the output above for errors.
+)
+pause
+goto menu
+
 :browser
 echo.
-set BROWSER_EXE=src\koii_os\browser\core\dist\Min 1.35.5.exe
+set BROWSER_EXE=src\koii_os\browser\core\dist\app\Min 1.35.5.exe
 if not exist "%BROWSER_EXE%" (
     echo [ERROR] Browser executable not found!
     echo Expected location: %BROWSER_EXE%

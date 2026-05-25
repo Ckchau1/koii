@@ -42,13 +42,10 @@ var llmChatPanel = {
       llmChatPanel.togglePanel()
     })
 
-    // Insert into right-actions area before the add-tab button
-    var rightActions = document.querySelector('.navbar-right-actions')
+    // Insert AFTER add-tab button (between + and ≡ menu button)
     var addTabButton = document.getElementById('add-tab-button')
-    if (rightActions && addTabButton) {
-      rightActions.insertBefore(chatButton, addTabButton)
-    } else if (rightActions) {
-      rightActions.appendChild(chatButton)
+    if (addTabButton && addTabButton.parentNode) {
+      addTabButton.parentNode.insertBefore(chatButton, addTabButton.nextSibling)
     } else {
       var navbar = document.getElementById('navbar')
       if (navbar) navbar.appendChild(chatButton)
