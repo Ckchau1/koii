@@ -100,15 +100,17 @@ REM Main menu
 cls
 echo.
 echo ========================================
-echo    Koii OS (AIOS) Control Center
+echo    Koii OS (AIOS) Control Center v2.0
 echo ========================================
 echo.
-echo === Browser ===
-echo 10) Start AI Min Browser (Native)
-echo 11) Build AI Min Browser (.exe)
+echo === Browser (Koii OS) ===
+echo 20) Launch Browser (Native)
+echo 21) Build Browser (Native)
+echo 22) Launch Browser (Docker)
+echo 23) Build Browser (Docker)
 echo.
 echo === Docker Services ===
-echo 1) Start AIOS (with Web UI)
+echo 1) Start AIOS (with Browser ^& Services)
 echo 2) Stop AIOS
 echo 3) Restart AIOS
 echo 4) View logs
@@ -116,15 +118,22 @@ echo 5) Rebuild containers
 echo 6) Clean up (remove containers and volumes)
 echo 7) Show status
 echo 8) Open Web UI
-echo 9) Enter container shell
+echo 9) Enter container shell (AIOS)
+echo.
+echo === Browser-specific ===
+echo 10) View Browser logs
+echo 11) Rebuild Browser only
+echo 12) Restart Browser container
 echo.
 echo 0) Exit
 echo.
 
 set /p choice="Select an option: "
 
-if "%choice%"=="10" goto browser
-if "%choice%"=="11" goto build_browser
+if "%choice%"=="20" goto browser_native
+if "%choice%"=="21" goto build_browser_native
+if "%choice%"=="22" goto browser_docker
+if "%choice%"=="23" goto build_browser_docker
 if "%choice%"=="1" goto start
 if "%choice%"=="2" goto stop
 if "%choice%"=="3" goto restart
@@ -134,15 +143,18 @@ if "%choice%"=="6" goto cleanup
 if "%choice%"=="7" goto status
 if "%choice%"=="8" goto webui
 if "%choice%"=="9" goto shell
+if "%choice%"=="10" goto browser_logs
+if "%choice%"=="11" goto rebuild_browser
+if "%choice%"=="12" goto restart_browser
 if "%choice%"=="0" goto end
 
 echo Invalid option. Please try again.
 pause
 goto menu
 
-:build_browser
+:build_browser_native
 echo.
-echo [INFO] Building AI Min Browser...
+echo [INFO] Building Koii OS Browser (Native)...
 echo This may take 3-5 minutes. Please wait.
 echo.
 cd src\koii_os\browser\core
@@ -157,48 +169,88 @@ if not exist "node_modules" (
     echo [INFO] Installing dependencies...
     npm install
 )
-echo [INFO] Building browser bundles...
+echo [INFO] Building browser...
 npm run build
-echo [INFO] Packaging .exe (this takes a while)...
+echo [INFO] Packaging (this takes a while)...
 npx electron-builder --win portable --publish=never
 cd ..\..\..\..
 echo.
-if exist "src\koii_os\browser\core\dist\app\Min 1.35.5.exe" (
-    echo [SUCCESS] Browser built: src\koii_os\browser\core\dist\app\Min 1.35.5.exe
-) else (
-    echo [ERROR] Build failed. Check the output above for errors.
-)
+echo [SUCCESS] Browser built in src\koii_os\browser\core\dist\
 pause
 goto menu
 
-:browser
+:browser_native
 echo.
-set BROWSER_EXE=src\koii_os\browser\core\dist\app\Min 1.35.5.exe
-if not exist "%BROWSER_EXE%" (
-    echo [ERROR] Browser executable not found!
-    echo Expected location: %BROWSER_EXE%
-    echo.
-    echo Please build the browser first:
-    echo   cd src\koii_os\browser\core
-    echo   npm run build
-    echo   npx electron-builder --win portable --publish=never
-    echo.
-    pause
-    goto menu
+echo [INFO] Launching Koii OS Browser (Native)...
+cd src\koii_os\browser\core
+if not exist "node_modules" (
+    echo [INFO] Installing dependencies...
+    npm install
 )
-echo [INFO] Launching AI Min Browser...
-start "" "%BROWSER_EXE%"
+echo [INFO] Starting browser...
+npx electron . &
+cd ..\..\..\..
 echo [SUCCESS] Browser launched!
 timeout /t 2
 goto menu
 
+:build_browser_docker
+echo.
+echo [INFO] Building Koii OS Browser Docker image...
+echo.
+docker build -f Dockerfile.browser -t koii-browser:latest .
+if %errorlevel% equ 0 (
+    echo [SUCCESS] Browser Docker image built!
+) else (
+    echo [ERROR] Build failed!
+)
+pause
+goto menu
+
+:browser_docker
+echo.
+echo [INFO] Starting Koii OS Browser in Docker...
+%COMPOSE_CMD% up -d koii-browser
+if %errorlevel% equ 0 (
+    echo [SUCCESS] Browser started!
+    echo Access at: http://localhost:3000
+) else (
+    echo [ERROR] Failed to start browser!
+)
+pause
+goto menu
+
+:browser_logs
+echo.
+echo [INFO] Browser logs (Ctrl+C to exit)...
+%COMPOSE_CMD% logs -f koii-browser
+pause
+goto menu
+
+:rebuild_browser
+echo.
+echo [INFO] Rebuilding Browser container...
+%COMPOSE_CMD% build --no-cache koii-browser
+echo [SUCCESS] Browser rebuilt
+pause
+goto menu
+
+:restart_browser
+echo.
+echo [INFO] Restarting Browser...
+%COMPOSE_CMD% restart koii-browser
+echo [SUCCESS] Browser restarted
+pause
+goto menu
+
 :start
 echo.
-echo [INFO] Starting Koii OS...
+echo [INFO] Starting Koii OS with Browser...
 %COMPOSE_CMD% up -d
 echo.
-echo [SUCCESS] Koii OS is running!
-echo Web UI: http://localhost:8000
+echo [SUCCESS] Services are running!
+echo AIOS Web UI: http://localhost:8000
+echo Browser UI: http://localhost:3000
 echo NATS Monitor: http://localhost:8222
 echo.
 pause

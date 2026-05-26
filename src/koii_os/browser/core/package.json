@@ -1,91 +1,143 @@
 {
-  "name": "min",
-  "productName": "Min",
-  "author": "PalmerAL",
-  "version": "1.35.5",
-  "description": "A fast, minimal browser that protects your privacy",
-  "electronVersion": "41.2.0",
-  "main": "main.build.js",
-  "standard": {
-    "globals": [
-      "l",
-      "tabs",
-      "tasks",
-      "globalArgs",
-      "platformType",
-      "throttle",
-      "debounce",
-      "empty",
-      "alert",
-      "confirm",
-      "requestAnimationFrame",
-      "requestIdleCallback",
-      "fetch",
-      "localStorage",
-      "performance",
-      "IntersectionObserver",
-      "Node",
-      "Event"
-    ]
+  "name": "koii-os-browser",
+  "version": "0.1.0",
+  "description": "Koii OS Light Browser with Agent System and LLM Settings Panel",
+  "main": "electron/main.js",
+  "homepage": "./",
+  "author": "Koii Team",
+  "license": "MIT",
+  "scripts": {
+    "dev": "concurrently \"npm run start\" \"wait-on http://localhost:3000 && electron .\"",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "electron": "electron .",
+    "electron-dev": "nodemon --exec \"electron .\"",
+    "electron-dev:win": "set NODE_ENV=development && electron .",
+    "preelectron-builder": "npm run build",
+    "electron-builder": "electron-builder",
+    "electron-builder:win": "npm run build && electron-builder --win --publish=never",
+    "electron-builder:mac": "npm run build && electron-builder --mac --publish=never",
+    "electron-builder:linux": "npm run build && electron-builder --linux --publish=never",
+    "electron-builder:all": "npm run build && electron-builder -mwl --publish=never",
+    "pack": "npm run build && electron-builder --dir --publish=never",
+    "dist": "npm run build && electron-builder --publish=never",
+    "dist:win": "npm run build && electron-builder --win portable --publish=never",
+    "dist:win:installer": "npm run build && electron-builder --win nsis --publish=never",
+    "dist:mac": "npm run build && electron-builder --mac --publish=never",
+    "dist:linux": "npm run build && electron-builder --linux AppImage deb --publish=never"
   },
   "dependencies": {
-    "@browsermt/bergamot-translator": "^0.4.9",
-    "@electron/fuses": "^1.7.0",
-    "chokidar": "^3.6.0",
-    "dexie": "^3.0.3",
-    "dragula": "github:minbrowser/dragula",
-    "electron-squirrel-startup": "^1.0.0",
-    "expr-eval": "^2.0.2",
-    "node-abi": "^3.8.0",
-    "papaparse": "^5.5.1",
-    "pdfjs-dist": "4.2.67",
-    "punycode": "^2.3.1",
-    "quick-score": "^0.2.0",
-    "regedit": "^3.0.3",
-    "sortablejs": "^1.15.1",
-    "stemmer": "^1.0.5",
-    "write-file-atomic": "^6.0.0"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.0",
+    "axios": "^1.6.2",
+    "crypto-js": "^4.2.0",
+    "electron-squirrel-startup": "^1.0.1",
+    "electron-is-dev": "^2.0.0"
   },
   "devDependencies": {
-    "archiver": "^4.0.1",
-    "browserify": "^16.5.1",
-    "concurrently": "^5.2.0",
-    "decomment": "^0.9.0",
-    "electron": "41.2.0",
-    "electron-builder": "^24.13.3",
-    "electron-installer-windows": "^3.0.0",
-    "electron-renderify": "0.0.2",
-    "prebuild-install": "^7.0.1",
-    "prettier": "^2.2.1",
-    "snazzy": "^9.0.0",
-    "standard": "^14.3.4"
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.4",
+    "react-scripts": "5.0.1",
+    "concurrently": "^8.2.2",
+    "wait-on": "^7.0.1",
+    "nodemon": "^3.0.2"
   },
-  "license": "Apache-2.0",
-  "scripts": {
-    "postinstall": "node ./scripts/setupDevEnv.js",
-    "test": "standard --verbose js/**/*.js main/*.js",
-    "watch": "node ./scripts/watch.js",
-    "startElectron": "electron . --development-mode",
-    "start": "npm run build && concurrently \"npm run watch\" \"npm run startElectron\"",
-    "buildMain": "node ./scripts/buildMain.js",
-    "buildBrowser": "node ./scripts/buildBrowser.js",
-    "buildBrowserStyles": "node ./scripts/buildBrowserStyles.js",
-    "buildPreload": "node ./scripts/buildPreload.js",
-    "build": "npm run buildMain && npm run buildBrowser && npm run buildBrowserStyles && npm run buildPreload",
-    "buildWindows": "npm run build && node ./scripts/buildWindows.js",
-    "buildMacIntel": "npm run build && node ./scripts/buildMac.js --platform=x86",
-    "buildMacArm": "npm run build && node ./scripts/buildMac.js --platform=arm64",
-    "buildDebian": "npm run build && node ./scripts/buildDebian.js --platform=amd64",
-    "buildRedhat": "npm run build && node ./scripts/buildRedhat.js",
-    "buildAll": "npm run buildWindows && npm run buildMacIntel && npm run buildMacArm && npm run buildDebian && npm run buildRedhat && npm run buildAppImage",
-    "buildAppImage": "npm run build && node ./scripts/buildAppImage.js",
-    "updateFilters": "node ./ext/filterLists/updateEasylist.js",
-    "updateHttpsList": "node ./ext/httpsUpgrade/updateHttpsList.js",
-    "updateSuffixes": "node ./ext/publicSuffixes/updateSuffixes.js",
-    "lint": "prettier --write **/**/*.css **/**/*.md **/**/*.html **/**/*.json && standard --fix js/**/*.js main/*.js | snazzy"
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/minbrowser/min.git"
+  "build": {
+    "extends": null,
+    "appId": "com.koii.os.browser",
+    "productName": "Koii OS Browser",
+    "artifactName": "${productName}-${version}-${arch}.${ext}",
+    "asar": true,
+    "files": [
+      "build/**/*",
+      "electron/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "assets",
+      "output": "dist"
+    },
+    "extraMetadata": {
+      "main": "electron/main.js"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "certificateFile": null,
+      "certificatePassword": null,
+      "signingHashAlgorithms": [
+        "sha256"
+      ],
+      "sign": null,
+      "icon": "public/koii.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Koii OS Browser"
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}.${ext}"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.utilities"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 110,
+          "y": 150,
+          "type": "file"
+        },
+        {
+          "x": 240,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility"
+    }
   }
 }

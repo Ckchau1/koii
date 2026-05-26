@@ -1,0 +1,152 @@
+.browser-header {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  height: 64px;
+}
+
+/* Logo and Branding */
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #9d4edd 0%, #7209b7 100%);
+  box-shadow: 0 4px 12px rgba(157, 78, 221, 0.3);
+}
+
+.logo-icon {
+  width: 28px;
+  height: 28px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.brand-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  white-space: nowrap;
+  background: linear-gradient(135deg, #9d4edd 0%, #7209b7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Navigation Tabs */
+.header-nav {
+  display: flex;
+  gap: 0.5rem;
+  flex: 1;
+  padding: 0 1rem;
+}
+
+.nav-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+  position: relative;
+}
+
+.nav-tab:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-tab.active {
+  color: #ffffff;
+  border-bottom-color: #9d4edd;
+}
+
+.nav-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #9d4edd 0%, #7209b7 100%);
+  border-radius: 2px 2px 0 0;
+}
+
+.nav-icon {
+  font-size: 1.125rem;
+  opacity: 0.8;
+}
+
+/* Header Actions */
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.action-btn:active {
+  transform: scale(0.95);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .browser-header {
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .header-nav {
+    gap: 0.25rem;
+    padding: 0 0.5rem;
+  }
+
+  .nav-tab {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .nav-icon {
+    display: none;
+  }
+
+  .brand-text {
+    display: none;
+  }
+}

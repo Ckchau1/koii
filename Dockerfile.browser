@@ -1,0 +1,71 @@
+# Multi-stage build for Koii OS Browser
+# Supports Linux, macOS, Windows via Docker
+
+# Stage 1: Builder
+FROM node:18-alpine AS builder
+
+WORKDIR /build
+
+# Copy browser source
+COPY src/koii_os/browser/core /build
+
+# Install dependencies
+RUN npm install --production=false
+
+# Build the React application
+RUN npm run build
+
+# Stage 2: Runtime - Electron for desktop (dev mode)
+FROM node:18-bullseye
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV NODE_ENV=production
+
+# Install dependencies for Electron/browser
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # X11 support for display
+    xvfb \
+    x11-utils \
+    dbus \
+    dbus-x11 \
+    # Chromium dependencies
+    libxss1 \
+    libappindicator1 \
+    libindicator7 \
+    fonts-liberation \
+    libnss3 \
+    libxkbcommon-x11-0 \
+    libgbm1 \
+    # Electron dependencies
+    libgconf-2-4 \
+    # Network tools
+    curl \
+    netcat \
+    # Shell
+    bash \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy built browser from builder stage
+COPY --from=builder /build/build ./build
+COPY --from=builder /build/electron ./electron
+COPY --from=builder /build/public ./public
+COPY --from=builder /build/package.json ./package.json
+
+# Install production dependencies only
+RUN npm install --production
+
+# Create config directories
+RUN mkdir -p /app/.koii-configs /app/logs
+
+# Expose ports
+EXPOSE 3000 27018 27019 27020
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000 || exit 1
+
+# Default command - start React dev server (for development)
+# For production, use 'npm start' with proper IPC
+CMD ["npm", "start"]

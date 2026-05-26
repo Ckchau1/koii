@@ -1,22 +1,72 @@
+# Koii OS (AIOS) - Ubuntu-based Docker Image
+# Optimized for development and production on Linux/WSL
+
 FROM ubuntu:24.04
 
-ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    KOII_ENV=production
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-       python3 \
-       python3-pip \
-       ca-certificates \
-       curl \
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Python and build tools
+    python3 \
+    python3-pip \
+    python3-dev \
+    build-essential \
+    git \
+    curl \
+    wget \
+    # Node.js for browser support
+    nodejs \
+    npm \
+    # Database clients
+    sqlite3 \
+    postgresql-client \
+    # Network tools
+    netcat-openbsd \
+    ca-certificates \
+    # Utilities
+    bash \
+    vim \
+    htop \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
+# Copy and install Python dependencies
 COPY requirements.txt /app/requirements.txt
-RUN pip3 install --no-cache-dir -r /app/requirements.txt
+RUN pip3 install --upgrade pip setuptools wheel && \
+    pip3 install -r /app/requirements.txt
 
+# Copy application code
 COPY . /app
 
-ENV PYTHONUNBUFFERED=1
+# Create necessary directories
+RUN mkdir -p /app/data /app/logs /app/config /app/.koii-configs && \
+    chmod 755 /app/data /app/logs /app/config /app/.koii-configs
 
+# Install browser dependencies (if present)
+RUN if [ -f "/app/src/koii_os/browser/core/package.json" ]; then \
+    cd /app/src/koii_os/browser/core && \
+    npm install --production && \
+    npm run build && \
+    cd /app; \
+    fi
+
+# Create non-root user
+RUN groupadd -r koii && useradd -r -g koii koii && \
+    chown -R koii:koii /app
+
+USER koii
+
+# Expose ports
+EXPOSE 8000 8222 27017 27018 27019 27020 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Run the application
 CMD ["python3", "-m", "src.main"]

@@ -1,15 +1,20 @@
-version: '3.8'
+version: '3.9'
 
 services:
-  # Main AIOS application with Web UI
-  aios:
+  # Main Koii OS Backend
+  koii-aios:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: koii-aios
+    hostname: koii-aios
     ports:
       - "8000:8000"    # Web UI / API
-      - "43210:43210"  # Min Browser API
+      - "8222:8222"    # NATS Monitoring
+      - "27017:27017"  # MongoDB/Agent Bus
+      - "27018:27018"  # Agent RPC
+      - "27019:27019"  # Task Queue
+      - "27020:27020"  # Event Bus
     volumes:
       # Persist data
       - ./data:/app/data
@@ -19,15 +24,24 @@ services:
       - ./agent-config.yaml:/app/agent-config.yaml:ro
       # Optional: mount .env for API keys
       - ./.env:/app/.env:ro
+      # Encrypted configs
+      - koii-configs:/app/.koii-configs
     environment:
       - PYTHONUNBUFFERED=1
       - KOII_ENV=docker
       - KOII_DATA_DIR=/app/data
       - KOII_CONFIG_DIR=/app/config
       - KOII_LOG_DIR=/app/logs
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - NATS_URL=nats://nats:4222
+      - REDIS_URL=redis://redis:6379
     restart: unless-stopped
     networks:
       - koii-network
+    depends_on:
+      - nats
+      - redis
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -35,10 +49,40 @@ services:
       retries: 3
       start_period: 40s
 
-  # NATS messaging server (optional, for distributed agents)
+  # Koii OS Browser - Electron UI (Containerized)
+  koii-browser:
+    build:
+      context: .
+      dockerfile: Dockerfile.browser
+    container_name: koii-browser
+    hostname: koii-browser
+    ports:
+      - "3000:3000"    # React dev server / Browser UI
+    volumes:
+      - ./src/koii_os/browser/core/build:/app/build
+      - koii-browser-configs:/app/.koii-configs
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_URL=http://koii-aios:8000
+      - REACT_APP_WS_URL=ws://koii-aios:8000
+      - REACT_APP_NATS_URL=nats://nats:4222
+    restart: unless-stopped
+    networks:
+      - koii-network
+    depends_on:
+      - koii-aios
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # NATS messaging server - Core communication hub
   nats:
     image: nats:2.10-alpine
     container_name: koii-nats
+    hostname: nats
     ports:
       - "4222:4222"  # Client connections
       - "8222:8222"  # HTTP monitoring
@@ -47,6 +91,7 @@ services:
       - "--http_port"
       - "8222"
       - "--js"       # Enable JetStream
+      - "--sd=/data" # Snapshots
     volumes:
       - nats-data:/data
     restart: unless-stopped
@@ -54,6 +99,25 @@ services:
       - koii-network
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Redis Cache - Session & cache storage
+  redis:
+    image: redis:7-alpine
+    container_name: koii-redis
+    hostname: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - koii-network
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-koii_password}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -100,13 +164,18 @@ services:
 networks:
   koii-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
 
 volumes:
   nats-data:
     driver: local
+  redis-data:
+    driver: local
+  koii-configs:
+    driver: local
+  koii-browser-configs:
+    driver: local
   # postgres-data:
   #   driver: local
-  # redis-data:
-  #   driver: local
-
-# Made with Bob
