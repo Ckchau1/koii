@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import BrowserHeader from './BrowserHeader';
 import AddressBar from './AddressBar';
+import ChatPanel from './ChatPanel';
 import LLMSettingsPanel from './LLMSettingsPanel';
 import AgentDashboard from './AgentDashboard';
 import '../styles/ModernBrowserInterface.css';
@@ -79,6 +80,12 @@ function ModernBrowserInterface() {
               sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-presentation"
               title="Browser Content"
             />
+          </div>
+        )}
+
+        {activeTab === 'chat' && (
+          <div className="tab-content chat-tab" style={{ padding: 0 }}>
+            <ChatPanel />
           </div>
         )}
 

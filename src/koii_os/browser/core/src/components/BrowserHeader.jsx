@@ -31,6 +31,13 @@ function BrowserHeader({ activeTab, onTabChange }) {
           Browser
         </button>
         <button
+          className={`nav-tab ${activeTab === 'chat' ? 'active' : ''}`}
+          onClick={() => onTabChange('chat')}
+        >
+          <span className="nav-icon">💬</span>
+          Chat
+        </button>
+        <button
           className={`nav-tab ${activeTab === 'agents' ? 'active' : ''}`}
           onClick={() => onTabChange('agents')}
         >
@@ -42,7 +49,7 @@ function BrowserHeader({ activeTab, onTabChange }) {
           onClick={() => onTabChange('settings')}
         >
           <span className="nav-icon">⚙️</span>
-          LLM Settings
+          Settings
         </button>
       </nav>
 
