@@ -203,4 +203,4 @@ This is a simulation/prototype layer in Python, not a real hardware kernel. It i
 
 ## Downloads
 
-[![GitHub All Releases](https://img.shields.io/github/downloads/Ckchau1/koii/total.svg)](https://github.com/Ckchau1/koii/releases)
+[![GitHub All Releases](https://img.shields.io/github/downloads/Ckchau1/koii/total.svg)](https://github.com/Ckchau1/koii/releases/download/release/Koii.OS.Browser-0.1.0-x64.exe)
