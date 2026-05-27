@@ -187,7 +187,7 @@ python scripts/demo_browser_automation.py
 #       goal: "Navigate to example.com and take a screenshot"
 ```
 
-See [BROWSER_AUTOMATION.md](BROWSER_AUTOMATION.md) for detailed usage guide.
+See for detailed usage guide.
 
 ## Current scope
 
@@ -200,7 +200,3 @@ This is a simulation/prototype layer in Python, not a real hardware kernel. It i
 - Add full duplex relay worker and delivery acknowledgements
 - Add policy engine with OPA/Rego
 - Add Kubernetes operator for global orchestration
-
-## Downloads
-
-[![GitHub All Releases](https://img.shields.io/github/downloads/Ckchau1/koii/total.svg)](https://github.com/Ckchau1/koii/releases/download/release/Koii.OS.Browser-0.1.0-x64.exe)
